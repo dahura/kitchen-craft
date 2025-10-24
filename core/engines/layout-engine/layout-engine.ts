@@ -11,7 +11,11 @@ import type {
   Position,
   RenderableModule,
   Rotation,
+  KitchenBoundingBox,
+  CenteringOptions,
+  EnhancedKitchenConfig,
 } from "../../types";
+import { calculateKitchenBoundingBox } from "../../../app/(app)/(designer)/utils/room-boundary-calculator";
 
 /**
  * Генерирует массив объектов для рендеринга из конфигурации кухни.
@@ -22,6 +26,23 @@ import type {
 export function generate(
   kitchenConfig: KitchenConfig,
   materialLibrary: MaterialLibrary,
+): RenderableModule[] {
+  return generateWithCentering(kitchenConfig, materialLibrary, {
+    enabled: false,
+  });
+}
+
+/**
+ * Генерирует массив объектов для рендеринга с возможностью центрирования.
+ * @param kitchenConfig - Конфигурация кухни от ИИ/пользователя
+ * @param materialLibrary - Библиотека материалов из приложения
+ * @param centeringOptions - Опции центрирования кухни
+ * @returns Массив RenderableModule
+ */
+export function generateWithCentering(
+  kitchenConfig: KitchenConfig,
+  materialLibrary: MaterialLibrary,
+  centeringOptions: CenteringOptions,
 ): RenderableModule[] {
   const renderableModules: RenderableModule[] = [];
   const { globalSettings, defaultMaterials } = kitchenConfig;
@@ -72,7 +93,83 @@ export function generate(
     renderableModules.push(renderableModule);
   }
 
+  // Применяем центрирование если включено
+  if (centeringOptions.enabled) {
+    const centeredModules = applyCentering(
+      renderableModules,
+      kitchenConfig,
+      centeringOptions,
+    );
+    return centeredModules;
+  }
+
   return renderableModules;
+}
+
+/**
+ * Применяет центрирование к массиву модулей
+ */
+function applyCentering(
+  modules: RenderableModule[],
+  kitchenConfig: KitchenConfig,
+  centeringOptions: CenteringOptions,
+): RenderableModule[] {
+  // Вычисляем bounding box для всех модулей
+  const boundingBox = calculateKitchenBoundingBox(modules);
+
+  // Вычисляем центр комнаты
+  const roomCenter = {
+    x: kitchenConfig.globalSettings.dimensions.sideA! / 2,
+    y: kitchenConfig.globalSettings.dimensions.height / 2,
+    z: -kitchenConfig.globalSettings.dimensions.sideB! / 2,
+  };
+
+  // Вычисляем смещение для центрирования
+  const offset = {
+    x: roomCenter.x - boundingBox.center.x + (centeringOptions.offsetX || 0),
+    y: centeringOptions.offsetY || 0, // Обычно не смещаем по Y
+    z: roomCenter.z - boundingBox.center.z + (centeringOptions.offsetZ || 0),
+  };
+
+  // Применяем смещение ко всем модулям
+  return modules.map((module) => {
+    const centeredModule = {
+      ...module,
+      position: {
+        x: module.position.x + offset.x,
+        y: module.position.y + offset.y,
+        z: module.position.z + offset.z,
+      },
+    };
+
+    // Также смещаем дочерние элементы
+    if (module.children && module.children.length > 0) {
+      centeredModule.children = module.children.map((child) => ({
+        ...child,
+        position: {
+          x: child.position.x + offset.x,
+          y: child.position.y + offset.y,
+          z: child.position.z + offset.z,
+        },
+      }));
+    }
+
+    return centeredModule;
+  });
+}
+
+/**
+ * Генерирует расширенную конфигурацию кухни с центрированием
+ */
+export function generateEnhanced(
+  kitchenConfig: EnhancedKitchenConfig,
+  materialLibrary: MaterialLibrary,
+): RenderableModule[] {
+  return generateWithCentering(
+    kitchenConfig,
+    materialLibrary,
+    kitchenConfig.globalSettings.roomConfiguration.centering,
+  );
 }
 
 // --- Вспомогательные функции ---
@@ -127,7 +224,7 @@ function createRenderableModule(
   // Определяем, нужно ли размещать модуль на цоколе
   const needsPlinth = module.type === "base" || module.type === "sink";
   const plinthOffset = needsPlinth ? globalSettings.dimensions.plinthHeight : 0;
-  
+
   const position: Position = {
     x: relativePos.x,
     y: (module.positioning.offset.y || 0) + plinthOffset,
@@ -141,7 +238,11 @@ function createRenderableModule(
     position,
     rotation,
     dimensions,
-    structure: module.structure || { type: "door-and-shelf", doorCount: 1, shelves: [] },
+    structure: module.structure || {
+      type: "door-and-shelf",
+      doorCount: 1,
+      shelves: [],
+    },
     carcass: module.carcass || { thickness: 1.8, backPanelThickness: 0.5 },
     materials: resolveMaterials(module, defaultMaterials, materialLibrary),
     children: [],

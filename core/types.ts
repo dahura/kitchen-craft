@@ -67,19 +67,21 @@ export interface ModuleConfig {
   id: string;
   type: string;
   variant?: string; // variant становится опциональным, т.к. structure важнее
-  width: number | 'auto';
+  width: number | "auto";
   positioning: Positioning;
-  materialOverrides?: Partial<Record<'facade' | 'countertop' | 'handle', string>>;
+  materialOverrides?: Partial<
+    Record<"facade" | "countertop" | "handle", string>
+  >;
   handle?: {
     placement: HandlePlacement;
   };
   constraints?: {
     fillsRemainingSpace: boolean;
   };
-  
+
   // --- НОВЫЕ ПОЛЯ ---
   structure?: Structure; // Описание внутреннего наполнения
-  carcass?: Carcass;    // Описание корпуса
+  carcass?: Carcass; // Описание корпуса
 
   // Поля, которые добавляет Validation Engine
   finalWidth?: number;
@@ -199,7 +201,6 @@ export interface GlobalConstraints {
   };
 }
 
-
 // core/types.ts
 
 // ... (все предыдущие интерфейсы) ...
@@ -212,14 +213,14 @@ export interface Carcass {
 }
 
 export interface DrawerStructure {
-  type: 'drawers';
+  type: "drawers";
   count: number;
   drawerHeights: number[]; // Массив высот каждого ящика
   internalDepth: number; // Глубина ящиков (обычно меньше глубины шкафа)
 }
 
 export interface DoorAndShelfStructure {
-  type: 'door-and-shelf';
+  type: "door-and-shelf";
   doorCount: number; // 1 или 2
   shelves: { positionFromBottom: number }[]; // Массив полок
 }
@@ -230,3 +231,56 @@ export type Structure = DrawerStructure | DoorAndShelfStructure;
 
 // Заменяем старый интерфейс ModuleConfig на этот, обогащенный
 
+// --- НОВЫЕ ИНТЕРФЕЙСЫ ДЛЯ ЦЕНТРИРОВАНИЯ КУХНИ ---
+
+export interface KitchenBoundingBox {
+  min: Position;
+  max: Position;
+  center: Position;
+  width: number;
+  height: number;
+  depth: number;
+}
+
+export interface CenteringOptions {
+  enabled: boolean;
+  offsetX?: number;
+  offsetY?: number;
+  offsetZ?: number;
+  maintainRelativePositions?: boolean;
+}
+
+export interface RoomConfiguration {
+  width: number;
+  depth: number;
+  height: number;
+  centering: CenteringOptions;
+}
+
+export interface CameraConstraints {
+  enableBoundaries: boolean;
+  boundaryMargin: number;
+  minDistance: number;
+  maxDistance: number;
+  minPolarAngle: number;
+  maxPolarAngle: number;
+  minAzimuthAngle: number;
+  maxAzimuthAngle: number;
+}
+
+// --- ОБНОВЛЕННЫЕ ИНТЕРФЕЙСЫ КОНФИГУРАЦИИ ---
+
+export interface EnhancedGlobalSettings extends GlobalSettings {
+  roomConfiguration: RoomConfiguration;
+  cameraConstraints: CameraConstraints;
+  viewportAdaptation: {
+    enabled: boolean;
+    adaptFov: boolean;
+    baseFov: number;
+  };
+}
+
+export interface EnhancedKitchenConfig
+  extends Omit<KitchenConfig, "globalSettings"> {
+  globalSettings: EnhancedGlobalSettings;
+}
