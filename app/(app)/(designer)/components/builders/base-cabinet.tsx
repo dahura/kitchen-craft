@@ -1,7 +1,7 @@
 // app/designer/components/builders/base-cabinet.tsx
 "use client";
 import { Box } from "@react-three/drei";
-import { RenderableModule } from "../../../../core/types";
+import { RenderableModule } from "../../../../../core/types";
 import { useMemo } from "react";
 import { Carcass } from "./carcass";
 

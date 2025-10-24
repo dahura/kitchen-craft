@@ -56,3 +56,14 @@ export const KitchenAccentLight = () => {
     />
   );
 };
+
+// Новый компонент для освещения стен
+export const WallLight = () => {
+  return (
+    <>
+      <pointLight position={[50, 150, -10]} intensity={0.2} color="#FFFFFF" />
+      <pointLight position={[250, 150, -10]} intensity={0.2} color="#FFFFFF" />
+      <pointLight position={[150, 150, -190]} intensity={0.2} color="#FFFFFF" />
+    </>
+  );
+};

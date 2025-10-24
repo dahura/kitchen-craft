@@ -2,7 +2,7 @@
 "use client";
 import { Box } from "@react-three/drei";
 import * as THREE from "three";
-import { Dimensions, Carcass as CarcassType } from "../../../../core/types";
+import { Dimensions, Carcass as CarcassType } from "../../../../../core/types";
 
 interface CarcassProps {
   dimensions: Dimensions;

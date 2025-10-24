@@ -2,7 +2,7 @@
 "use client";
 import { Box } from "@react-three/drei";
 import { useMemo } from "react";
-import type { RenderableModule } from "../../../../core/types";
+import type { RenderableModule } from "../../../../../core/types";
 
 interface PlinthProps {
   modules: RenderableModule[];
