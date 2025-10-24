@@ -230,7 +230,7 @@ export function useCameraAnimation(
 ) {
   const [currentPosition, setCurrentPosition] = useState(fromPosition);
   const [isAnimating, setIsAnimating] = useState(false);
-  const animationRef = useRef<number | undefined>();
+  const animationRef = useRef<number | undefined>(undefined);
 
   const animate = (startPos: Position, endPos: Position, duration: number) => {
     setIsAnimating(true);
