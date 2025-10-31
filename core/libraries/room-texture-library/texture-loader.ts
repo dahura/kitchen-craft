@@ -1,42 +1,73 @@
 // texture-loader.ts
 import * as THREE from "three";
+import { EXRLoader } from "three/examples/jsm/loaders/EXRLoader.js";
 
 import type { RoomTextureSet } from "../../types";
 
 // Кеширование загруженных текстур
 const textureCache = new Map<string, THREE.Texture>();
 const textureLoader = new THREE.TextureLoader();
+const exrLoader = new EXRLoader();
 
 /**
  * Загружает отдельную текстуру с кешированием
+ * Поддерживает обычные форматы (JPG, PNG) через TextureLoader
+ * и EXR формат через EXRLoader
  */
 export const loadTexture = (url: string): Promise<THREE.Texture> => {
   return new Promise((resolve, reject) => {
     // Проверяем кеш
-    if (textureCache.has(url)) {
-      resolve(textureCache.get(url)!);
+    const cachedTexture = textureCache.get(url);
+    if (cachedTexture) {
+      resolve(cachedTexture);
       return;
     }
 
-    // Загружаем текстуру
-    textureLoader.load(
-      url,
-      (texture) => {
-        // Настройки для оптимизации
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.colorSpace = THREE.SRGBColorSpace;
-        
-        // Кешируем
-        textureCache.set(url, texture);
-        resolve(texture);
-      },
-      undefined,
-      (error) => {
-        console.error(`Failed to load texture: ${url}`, error);
-        reject(error);
-      }
-    );
+    // Определяем тип текстуры по расширению
+    const isEXR = url.toLowerCase().endsWith(".exr");
+
+    if (isEXR) {
+      // Загружаем EXR текстуру
+      exrLoader.load(
+        url,
+        (texture) => {
+          // Настройки для оптимизации
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          // EXR файлы обычно уже в линейном цветовом пространстве
+          texture.colorSpace = THREE.LinearSRGBColorSpace;
+
+          // Кешируем
+          textureCache.set(url, texture);
+          resolve(texture);
+        },
+        undefined,
+        (error) => {
+          console.error(`Failed to load EXR texture: ${url}`, error);
+          reject(error);
+        }
+      );
+    } else {
+      // Загружаем обычную текстуру (JPG, PNG и т.д.)
+      textureLoader.load(
+        url,
+        (texture) => {
+          // Настройки для оптимизации
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.colorSpace = THREE.SRGBColorSpace;
+
+          // Кешируем
+          textureCache.set(url, texture);
+          resolve(texture);
+        },
+        undefined,
+        (error) => {
+          console.error(`Failed to load texture: ${url}`, error);
+          reject(error);
+        }
+      );
+    }
   });
 };
 
@@ -48,7 +79,7 @@ export const loadTextureSet = async (
   basePath: string = ""
 ): Promise<THREE.MeshStandardMaterial> => {
   console.log("Loading texture set:", { textureSet, basePath });
-  
+
   const materialProps: Partial<THREE.MeshStandardMaterialParameters> = {
     side: THREE.DoubleSide,
   };
@@ -87,7 +118,6 @@ export const loadTextureSet = async (
       const aoUrl = basePath + textureSet.ambientOcclusion;
       materialProps.aoMap = await loadTexture(aoUrl);
     }
-
   } catch (error) {
     console.error("Failed to load texture set:", error);
     // Возвращаем базовый материал в случае ошибки
