@@ -1,0 +1,9 @@
+---
+globs: *.ts,*.tsx
+---
+# TypeScript Guidelines
+
+1. Always enable **strict** mode; avoid `any`.
+2. Append new fields to interfaces _after_ existing ones; mark experimental fields optional with `?`.
+3. Document complex types using JSDoc.
+4. Do **not** import UI frameworks in `core/` files.

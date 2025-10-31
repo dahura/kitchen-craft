@@ -1,0 +1,36 @@
+---
+alwaysApply: true
+---
+# Core Architecture Overview (Kitchen-Craft)
+
+This rule distills the key concepts from [ARCHITECTURE.md](mdc:ARCHITECTURE.md) so the agent can quickly recall the data-flow, responsibilities and directory layout.
+
+## Layers & Responsibilities
+1. **UI (Next.js)** – gathers user/AI input and displays the 3D scene.
+2. **Core** – framework-agnostic business logic.
+   • [ValidationEngine](mdc:core/engines/validator-engine/) – verifies & auto-fixes `KitchenConfig`.
+   • [LayoutEngine](mdc:core/engines/layout-engine/) – transforms valid config into `RenderableModule[]` with 3D coordinates.
+3. **Geometry/Render** – React + Three.js builders in [app/(app)/(designer)/components/builders/](mdc:app/(app)/(designer)/components/builders/).
+
+## Canonical Data Flow
+```
+UI/AI → KitchenConfig → ValidationEngine → LayoutEngine → RenderableModule[] → Geometry → 3D Scene
+```
+
+## Single Source of Truth
+• All shared interfaces live in [core/types.ts](mdc:core/types.ts). Any type change must propagate to examples, engines and builders.
+
+## Libraries
+• Materials: [core/libraries/material-library/](mdc:core/libraries/material-library/)
+• Modules:   [core/libraries/module-library/](mdc:core/libraries/module-library/)
+• Room textures: [core/libraries/room-texture-library/](mdc:core/libraries/room-texture-library/)
+
+## Coding Rules (Core)
+• **No UI imports** (React/Next/Three) inside `core/`.
+• Functions are pure; never mutate inputs.
+• Validation is mandatory before layout.
+
+## Extension Workflow
+1. Update types → 2. Update examples → 3. Extend engines → 4. Adapt builders → 5. Update UI/stores → 6. Add tests.
+
+Keep this flow & directory structure in mind when navigating or modifying the project.

@@ -8,6 +8,7 @@ import * as THREE from "three";
 import { BaseCabinet } from "./components/builders/base-cabinet";
 import { Plinth } from "./components/builders/plinth";
 import { Room } from "./components/room";
+import { RoomMaterialsPanel } from "./components/room-materials-panel";
 import {
   MainLight,
   AmbientLight,
@@ -233,36 +234,41 @@ export default function ThreeCanvas() {
   }, [currentConfig]);
 
   return (
-    <Canvas
-      shadows
-      camera={{
-        position: [
-          cameraSettings.position.x,
-          cameraSettings.position.y,
-          cameraSettings.position.z,
-        ] as [number, number, number],
-        fov: cameraSettings.fov,
-        near: cameraSettings.near,
-        far: cameraSettings.far,
-      }}
-      style={{ width: "100%", height: "100%" }}
-      scene={{ background: new THREE.Color("#F8F8F8") }}
-    >
-      <SceneContent />
-
-      <BoundedOrbitControls
-        roomBoundaries={roomBoundaries}
-        safeZone={cameraSafeZone}
-        target={cameraTarget}
-        enablePan={true}
-        enableZoom={true}
-        enableRotate={true}
-        enableDamping={true}
-        dampingFactor={0.05}
-        onBoundaryHit={(boundary) => {
-          console.log(`Camera hit boundary: ${boundary}`);
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+      <Canvas
+        shadows
+        camera={{
+          position: [
+            cameraSettings.position.x,
+            cameraSettings.position.y,
+            cameraSettings.position.z,
+          ] as [number, number, number],
+          fov: cameraSettings.fov,
+          near: cameraSettings.near,
+          far: cameraSettings.far,
         }}
-      />
-    </Canvas>
+        style={{ width: "100%", height: "100%" }}
+        scene={{ background: new THREE.Color("#F8F8F8") }}
+      >
+        <SceneContent />
+
+        <BoundedOrbitControls
+          roomBoundaries={roomBoundaries}
+          safeZone={cameraSafeZone}
+          target={cameraTarget}
+          enablePan={true}
+          enableZoom={true}
+          enableRotate={true}
+          enableDamping={true}
+          dampingFactor={0.05}
+          onBoundaryHit={(boundary) => {
+            console.log(`Camera hit boundary: ${boundary}`);
+          }}
+        />
+      </Canvas>
+
+      {/* Панель управления материалами комнаты */}
+      <RoomMaterialsPanel />
+    </div>
   );
 }
