@@ -22,8 +22,8 @@ export const RoomMaterialsPanel = () => {
     activeSurface === "ceiling"
       ? "ceilings"
       : activeSurface === "walls"
-        ? "walls"
-        : "floors",
+      ? "walls"
+      : "floors"
   );
 
   const handleColorChange = (color: string) => {
@@ -36,7 +36,7 @@ export const RoomMaterialsPanel = () => {
 
   const handlePropertyChange = (
     property: "roughness" | "metalness" | "scale",
-    value: number,
+    value: number
   ) => {
     updateMaterialProperties(activeSurface, { [property]: value });
   };
@@ -98,8 +98,8 @@ export const RoomMaterialsPanel = () => {
               {surface === "walls"
                 ? "Стены"
                 : surface === "floor"
-                  ? "Пол"
-                  : "Потолок"}
+                ? "Пол"
+                : "Потолок"}
             </button>
           ))}
         </div>
@@ -190,39 +190,113 @@ export const RoomMaterialsPanel = () => {
       )}
 
       {/* Выбор текстуры */}
-      {currentMaterial.type === "texture" && availableTextures.length > 0 && (
+      {currentMaterial.type === "texture" && (
         <div style={{ marginBottom: "15px" }}>
-          <label
-            htmlFor={`texture-${activeSurface}`}
+          <div
             style={{
               display: "block",
-              marginBottom: "5px",
+              marginBottom: "8px",
               fontSize: "14px",
               fontWeight: "500",
             }}
           >
             Текстура:
-          </label>
-          <select
-            id={`texture-${activeSurface}`}
-            value={currentMaterial.value as string}
-            onChange={(e) => handleTextureChange(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-              fontSize: "12px",
-            }}
-          >
-            {availableTextures.map((textureId) => (
-              <option key={textureId} value={textureId}>
-                {textureId
+          </div>
+          {availableTextures.length > 0 ? (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
+                gap: "8px",
+                maxHeight: "200px",
+                overflowY: "auto",
+                padding: "4px",
+              }}
+            >
+              {availableTextures.map((textureId) => {
+                const isSelected =
+                  (currentMaterial.value as string) === textureId;
+                const displayName = textureId
                   .replace(/-/g, " ")
-                  .replace(/\b\w/g, (l) => l.toUpperCase())}
-              </option>
-            ))}
-          </select>
+                  .replace(/\b\w/g, (l) => l.toUpperCase());
+
+                return (
+                  <button
+                    key={textureId}
+                    type="button"
+                    id={`texture-${textureId}-${activeSurface}`}
+                    onClick={() => handleTextureChange(textureId)}
+                    style={{
+                      padding: "10px 8px",
+                      border: isSelected
+                        ? "2px solid #007bff"
+                        : "1px solid #ddd",
+                      borderRadius: "6px",
+                      background: isSelected ? "#e7f3ff" : "#fff",
+                      color: "#333",
+                      cursor: "pointer",
+                      fontSize: "11px",
+                      textAlign: "center",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "4px",
+                      transition: "all 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.background = "#f5f5f5";
+                        e.currentTarget.style.borderColor = "#007bff";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.background = "#fff";
+                        e.currentTarget.style.borderColor = "#ddd";
+                      }
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "4px",
+                        background:
+                          "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        border: "1px solid #ddd",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "20px",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      🎨
+                    </div>
+                    <span style={{ lineHeight: "1.2" }}>{displayName}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div
+              style={{
+                padding: "12px",
+                background: "#f5f5f5",
+                borderRadius: "4px",
+                fontSize: "12px",
+                color: "#666",
+                textAlign: "center",
+              }}
+            >
+              Нет доступных текстур для{" "}
+              {activeSurface === "walls"
+                ? "стен"
+                : activeSurface === "floor"
+                ? "пола"
+                : "потолка"}
+            </div>
+          )}
         </div>
       )}
 
