@@ -1,0 +1,19 @@
+---
+alwaysApply: true
+---
+# Kitchen-Craft Architecture Principles
+
+• Core layer (`core/`) contains _only_ business logic — **no imports** from React, Next.js or Three.js.
+• UI layer (`app/`) may import from `core/`, but _never_ the other way around.
+• Canonical data flow:
+```
+UI / AI → KitchenConfig → ValidationEngine → LayoutEngine → RenderableModule[] → 3D Scene
+```
+• Single source of truth for all interfaces: [core/types.ts](mdc:core/types.ts)
+  - Modify types here first, then update examples and engines.
+• Pure-function engines live in [core/engines/](mdc:core/engines/).
+• Extensible material / module data resides in [core/libraries/](mdc:core/libraries/).
+• 3D builders are React components located in [app/(app)/(designer)/components/builders/](mdc:app/(app)/(designer)/components/builders/).
+  - They must derive geometry from `module.dimensions` and materials from `module.materials`.
+• **Validation is mandatory:** Always pass KitchenConfig through ValidationEngine; never bypass.
+• State management uses Zustand stores in `app/lib/store/`; one action = one atomic change, followed by `regenerate()`.

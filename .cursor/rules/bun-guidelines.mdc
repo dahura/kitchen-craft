@@ -1,0 +1,14 @@
+---
+alwaysApply: true
+---
+# Package Manager Guideline – Bun
+
+The Kitchen-Craft repository is standardized on the [Bun](https://bun.sh) runtime and package manager:
+
+• All `npm`, `yarn` or `pnpm` commands in documentation or scripts should be replaced with their `bun` equivalents (e.g. `bun install`, `bun add react`).
+• New dependencies must be added via `bun add <pkg>` so that they appear in `bun.lock`.
+• Do **not** commit `package-lock.json` or `yarn.lock` updates; only `bun.lock` is authoritative.
+• CI/CD pipelines execute `bun install` followed by the build/test steps.
+• If scripts in `package.json` rely on Node, ensure they run under Bun or include `--bun` where required.
+
+This rule helps the AI keep consistency with the chosen package manager when modifying documentation, scripts or dependencies.

@@ -1,0 +1,44 @@
+---
+alwaysApply: true
+---
+# UI & 3D Builders Guidelines
+
+This rule captures best-practices for everything inside `app/` (Next.js UI layer) so the agent can build clean components and maintain state correctly.
+
+## File & Component Conventions
+• **kebab-case.tsx** for leaf components (e.g. `room-materials-panel.tsx`).
+• **PascalCase.tsx** for pages / layouts.
+• Components are exported via `export const` (named), pages via `export default`.
+
+## 3D Builders (`components/builders/`)
+1. Signature:
+```typescript
+export const ComponentName = ({ module }: { module: RenderableModule }) => { /* … */ };
+```
+2. Never hard-code dimensions — derive them from `module.dimensions`.
+3. Materials are resolved from `module.materials` keys.
+4. Heavy geometry/math calcs must be wrapped in `useMemo`; memoize builder component with `React.memo` when pure.
+5. Group positioning: `<group position={[module.position.x, …]}>` to respect LayoutEngine output.
+
+## General React/Next Rules
+• Prefer client components only when necessary; keep builders client-side.
+• Lazy-load heavy builders with `dynamic(() => import('./big-builder'), { ssr: false })`.
+• Keep components small; split complex logic.
+
+## Zustand State Stores (`app/lib/store/`)
+• One action = one atomic change; follow naming like `updateModule`, `regenerate`.
+• Never mutate state; always return new objects.
+• After mutating KitchenConfig, ALWAYS call `regenerate()` (validates + updates layout).
+
+## Performance Optimisations
+• Use `useMemo` / `useCallback` for expensive computations.
+• Batch render meshes with identical materials where possible.
+• Code-split large dependencies.
+
+## Forbidden Practices in UI Layer
+✗ Importing UI packages into `core` (the opposite direction).  
+✗ Deeply nested component trees without composition.  
+✗ Hard-coded numeric values for geometry.  
+✗ Skipping validation flow.
+
+Follow these rules to ensure the UI remains performant, readable and aligned with the project architecture.

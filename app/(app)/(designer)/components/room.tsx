@@ -3,6 +3,7 @@
 import { Plane, Box, Line } from "@react-three/drei";
 import { useMemo } from "react";
 import * as THREE from "three";
+import { useRoomMaterials } from "../hooks/useRoomMaterials";
 
 interface RoomProps {
   roomWidth: number;
@@ -11,42 +12,8 @@ interface RoomProps {
 }
 
 export const Room = ({ roomWidth, roomDepth, roomHeight }: RoomProps) => {
-  // Материалы для комнаты
-  const floorMaterial = useMemo(
-    () => (
-      <meshStandardMaterial
-        color="#D4A574" // Светло-деревянный цвет (дуб)
-        roughness={0.8}
-        metalness={0.1}
-        side={THREE.DoubleSide} // Отображаем с обеих сторон
-      />
-    ),
-    [],
-  );
-
-  const wallMaterial = useMemo(
-    () => (
-      <meshStandardMaterial
-        color="#F5F5F5" // Светло-серый/белый цвет стен
-        roughness={0.9}
-        metalness={0.0}
-        side={THREE.DoubleSide} // Отображаем с обеих сторон
-      />
-    ),
-    [],
-  );
-
-  const ceilingMaterial = useMemo(
-    () => (
-      <meshStandardMaterial
-        color="#FFFFFF" // Белый потолок
-        roughness={0.8}
-        metalness={0.0}
-        side={THREE.DoubleSide} // Отображаем с обеих сторон
-      />
-    ),
-    [],
-  );
+  // Используем новый хук для управления материалами комнаты
+  const { materials, isLoading } = useRoomMaterials();
 
   // Линии для обозначения границ комнаты
   const boundaryLines = useMemo(() => {
@@ -70,7 +37,7 @@ export const Room = ({ roomWidth, roomDepth, roomHeight }: RoomProps) => {
         receiveShadow
       >
         <planeGeometry args={[roomWidth, roomDepth]} />
-        {floorMaterial}
+        {materials.floor ? <primitive object={materials.floor} /> : null}
       </mesh>
 
       {/* Задняя стена */}
@@ -79,7 +46,7 @@ export const Room = ({ roomWidth, roomDepth, roomHeight }: RoomProps) => {
         receiveShadow
       >
         <planeGeometry args={[roomWidth, roomHeight]} />
-        {wallMaterial}
+        {materials.walls ? <primitive object={materials.walls} /> : null}
       </mesh>
 
       {/* Левая боковая стена */}
@@ -89,7 +56,7 @@ export const Room = ({ roomWidth, roomDepth, roomHeight }: RoomProps) => {
         receiveShadow
       >
         <planeGeometry args={[roomDepth, roomHeight]} />
-        {wallMaterial}
+        {materials.walls ? <primitive object={materials.walls} /> : null}
       </mesh>
 
       {/* Правая боковая стена */}
@@ -99,13 +66,13 @@ export const Room = ({ roomWidth, roomDepth, roomHeight }: RoomProps) => {
         receiveShadow
       >
         <planeGeometry args={[roomDepth, roomHeight]} />
-        {wallMaterial}
+        {materials.walls ? <primitive object={materials.walls} /> : null}
       </mesh>
 
       {/* Передняя стена */}
       <mesh position={[roomWidth / 2, roomHeight / 2, 0]} receiveShadow>
         <planeGeometry args={[roomWidth, roomHeight]} />
-        {wallMaterial}
+        {materials.walls ? <primitive object={materials.walls} /> : null}
       </mesh>
 
       {/* Потолок */}
@@ -115,7 +82,7 @@ export const Room = ({ roomWidth, roomDepth, roomHeight }: RoomProps) => {
         receiveShadow
       >
         <planeGeometry args={[roomWidth, roomDepth]} />
-        {ceilingMaterial}
+        {materials.ceiling ? <primitive object={materials.ceiling} /> : null}
       </mesh>
 
       {/* Границы комнаты (тонкие линии на полу) */}

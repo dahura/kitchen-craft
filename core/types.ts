@@ -255,6 +255,7 @@ export interface RoomConfiguration {
   depth: number;
   height: number;
   centering: CenteringOptions;
+  materials?: RoomMaterials; // Опционально для обратной совместимости
 }
 
 export interface CameraConstraints {
@@ -278,9 +279,71 @@ export interface EnhancedGlobalSettings extends GlobalSettings {
     adaptFov: boolean;
     baseFov: number;
   };
+  defaultRoomMaterials?: RoomMaterials; // Опционально
 }
+
+// --- НОВЫЕ ИНТЕРФЕЙСЫ ДЛЯ ТЕКСТУР КОМНАТ ---
+
+interface RoomTextureSet {
+  diffuse?: string;      // Base color map
+  normal?: string;       // Normal map
+  roughness?: string;    // Roughness map
+  displacement?: string; // Height/displacement map
+  ambientOcclusion?: string; // AO map (опционально)
+}
+
+interface RoomSurfaceMaterial {
+  type: "color" | "texture";
+  value: string | RoomTextureSet;
+  roughness?: number;
+  metalness?: number;
+  scale?: number;        // Масштаб текстуры
+}
+
+interface RoomMaterials {
+  walls: RoomSurfaceMaterial;
+  floor: RoomSurfaceMaterial;
+  ceiling: RoomSurfaceMaterial;
+}
+
+interface RoomTextureLibrary {
+  walls: Record<string, RoomTextureSet>;
+  floors: Record<string, RoomTextureSet>;
+  ceilings: Record<string, RoomTextureSet>;
+}
+
+
+// Утилита для создания значений по умолчанию
+export const createDefaultRoomMaterials = (): RoomMaterials => ({
+  walls: {
+    type: "color",
+    value: "#F5F5F5", // Текущий цвет стен
+    roughness: 0.9,
+    metalness: 0.0,
+  },
+  floor: {
+    type: "color",
+    value: "#D4A574", // Текущий цвет пола
+    roughness: 0.8,
+    metalness: 0.1,
+  },
+  ceiling: {
+    type: "color",
+    value: "#FFFFFF", // Текущий цвет потолка
+    roughness: 0.8,
+    metalness: 0.0,
+  },
+});
 
 export interface EnhancedKitchenConfig
   extends Omit<KitchenConfig, "globalSettings"> {
   globalSettings: EnhancedGlobalSettings;
 }
+
+// Экспортируем новые типы для использования в других модулях
+export type {
+  RoomTextureSet,
+  RoomSurfaceMaterial,
+  RoomMaterials,
+  RoomTextureLibrary
+};
