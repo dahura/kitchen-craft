@@ -5,6 +5,23 @@ import { RenderableModule } from "../../../../../core/types";
 import { useMemo } from "react";
 import { Carcass } from "./carcass";
 
+/**
+ * NOTE: This component uses the declarative @react-three/drei approach.
+ * 
+ * For an alternative implementation using the geometry-generator utilities,
+ * see: geometry-based-cabinet.tsx
+ * 
+ * The geometry-generator provides:
+ * - Framework-agnostic geometry generation
+ * - Better performance for complex scenes
+ * - More control over memory management
+ * - Reusable geometry helpers
+ * 
+ * Example usage:
+ * import { GeometryBasedCabinet } from './geometry-based-cabinet';
+ * <GeometryBasedCabinet module={module} interactive={true} />
+ */
+
 // Вспомогательные компоненты для отрисовки внутренних частей
 interface DrawerProps {
   width: number;
