@@ -56,25 +56,37 @@ export function generateWithCentering(
       globalSettings,
     );
 
-    let currentX = 0;
+    // Determine along which axis the line extends (X or Z) and its direction (+/-)
+    const isXAxis = Math.abs(line.direction.x) === 1;
+    const sign = isXAxis ? Math.sign(line.direction.x) : Math.sign(line.direction.z);
+
+    // Accumulator measuring distance from the line start (always positive)
+    let currentOffset = 0;
+
     for (const module of processedModules) {
-      // Position the module so its center is at the correct location
-      // For the first module, center it at width/2 from the origin
-      // For subsequent modules, position so they touch the previous module
-      const modulePosition = currentX + module.finalWidth / 2;
-      
+      // Calculate the module centre coordinate along the chosen axis
+      const centreAlongAxis = currentOffset + module.finalWidth / 2;
+
+      // Compose absolute 3-D position using axis + sign
+      const position: Position = {
+        x: isXAxis ? sign * centreAlongAxis : 0,
+        y: 0,
+        z: isXAxis ? 0 : sign * centreAlongAxis,
+      };
+
       const renderableModule = createRenderableModule(
         module,
-        { x: modulePosition, y: 0, z: 0 },
+        position,
         lineRotation,
         globalSettings,
         defaultMaterials,
         materialLibrary,
       );
+
       renderableModules.push(renderableModule);
-      
-      // Move to the next position: current position + module width + gap
-      currentX += module.finalWidth + globalSettings.rules.gapBetweenModules;
+
+      // Increment offset: module width + configured gap (always positive)
+      currentOffset += module.finalWidth + globalSettings.rules.gapBetweenModules;
     }
   }
 
