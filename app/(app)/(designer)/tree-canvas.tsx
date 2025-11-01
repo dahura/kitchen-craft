@@ -234,7 +234,7 @@ export default function ThreeCanvas() {
   }, [currentConfig]);
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+    <div className="relative w-full h-full">
       <Canvas
         shadows
         camera={{
@@ -247,7 +247,7 @@ export default function ThreeCanvas() {
           near: cameraSettings.near,
           far: cameraSettings.far,
         }}
-        style={{ width: "100%", height: "100%" }}
+        className="w-full h-full"
         scene={{ background: new THREE.Color("#F8F8F8") }}
       >
         <SceneContent />

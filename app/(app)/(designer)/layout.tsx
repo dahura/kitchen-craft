@@ -7,12 +7,12 @@ export default function DesignerLayout({
   children: React.ReactNode;
 }) {
   return (
-    <section style={{ width: "100vw", height: "100vh", display: "flex" }}>
+    <section className="w-screen h-screen flex">
       {/* В будущем здесь будет боковая панель */}
-      {/* <aside style={{ width: '300px' }}>...</aside> */}
+      {/* <aside className="w-80">...</aside> */}
 
       {/* Основная область для 3D сцены */}
-      <main style={{ flexGrow: 1 }}>{children}</main>
+      <main className="flex-1">{children}</main>
     </section>
   );
 }
