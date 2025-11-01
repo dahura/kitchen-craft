@@ -1,4 +1,4 @@
-// app/designer/components/builders/base-cabinet.tsx
+// app/designer/components/builders/tall-cabinet.tsx
 "use client";
 import { Box } from "@react-three/drei";
 import type { RenderableModule } from "../../../../../core/types";
@@ -6,23 +6,13 @@ import { useMemo } from "react";
 import { Carcass } from "./carcass";
 
 /**
- * NOTE: This component uses the declarative @react-three/drei approach.
+ * Tall Cabinet Builder Component
  * 
- * For an alternative implementation using the geometry-generator utilities,
- * see: geometry-based-cabinet.tsx
- * 
- * The geometry-generator provides:
- * - Framework-agnostic geometry generation
- * - Better performance for complex scenes
- * - More control over memory management
- * - Reusable geometry helpers
- * 
- * Example usage:
- * import { GeometryBasedCabinet } from './geometry-based-cabinet';
- * <GeometryBasedCabinet module={module} interactive={true} />
+ * Renders floor-to-ceiling tall cabinets (pantries, appliance housings, etc.).
+ * These cabinets are typically 200-220cm tall and can have mixed storage solutions.
  */
 
-// Вспомогательные компоненты для отрисовки внутренних частей
+// Helper components for internal parts
 interface DrawerProps {
   width: number;
   height: number;
@@ -59,14 +49,14 @@ interface ShelfProps {
 }
 
 const Shelf = ({ width, depth, position, color }: ShelfProps) => (
-  <Box position={position} args={[width, 1, depth]}>
+  <Box position={position} args={[width, 1.5, depth]}>
     <meshStandardMaterial color={color} />
   </Box>
 );
 
-// Главный компонент-строитель
-export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
-  // Создаем материалы один раз для оптимизации
+// Main tall cabinet builder component
+export const TallCabinet = ({ module }: { module: RenderableModule }) => {
+  // Create materials once for optimization
   const carcassMaterial = useMemo(
     () => <meshStandardMaterial color="#CCCCCC" />,
     [],
@@ -80,9 +70,8 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
     [module.materials.facade?.color],
   );
 
-  // Генерируем внутренние элементы на основе структуры
+  // Generate internal elements based on structure
   const internalElements = useMemo(() => {
-    // Check if module has structure and carcass properties
     const structure = module.structure;
     const carcass = module.carcass;
 
@@ -94,25 +83,25 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
 
     if (structure.type === "drawers") {
       const elements = [];
-      let currentY = carcassThickness; // Начинаем с дна
+      let currentY = carcassThickness; // Start from bottom
 
       for (let i = 0; i < structure.count; i++) {
         const drawerHeight = structure.drawerHeights[i];
         elements.push(
           <Drawer
             key={i}
-            width={internalWidth - 2} // Небольшой зазор по бокам
-            height={drawerHeight - 2} // Небольшой зазор сверху
+            width={internalWidth - 2} // Small gap on sides
+            height={drawerHeight - 2} // Small gap on top
             depth={structure.internalDepth}
             position={[
               0,
               currentY + drawerHeight / 2,
               (module.dimensions.depth - structure.internalDepth) / 2,
             ]}
-            color="#8B4513" // Цвет ящиков
+            color="#8B4513" // Drawer color
           />,
         );
-        currentY += drawerHeight + 1; // Прибавляем высоту ящика и зазор
+        currentY += drawerHeight + 1; // Add drawer height and gap
       }
       return <>{elements}</>;
     }
@@ -120,37 +109,55 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
     if (structure.type === "door-and-shelf") {
       const elements = [];
 
-      // 1. Рисуем полку
-      const shelfHeight = structure.shelves[0].positionFromBottom;
-      elements.push(
-        <Shelf
-          key="shelf"
-          width={internalWidth - 2}
-          depth={internalDepth - 1}
-          position={[0, shelfHeight, 0]}
-          color="#D2691E" // Цвет полки
-        />,
-      );
+      // Draw multiple shelves - tall cabinets have many shelves
+      structure.shelves.forEach((shelf, index) => {
+        elements.push(
+          <Shelf
+            key={`shelf-${index}`}
+            width={internalWidth - 2}
+            depth={internalDepth - 1}
+            position={[0, shelf.positionFromBottom, 0]}
+            color="#D2691E" // Shelf color
+          />,
+        );
+      });
 
-      // 2. Рисуем дверцу
-      const doorWidth = internalWidth - 2;
+      // Draw doors - tall cabinets typically have 2 doors
+      const doorWidth = structure.doorCount === 1 
+        ? internalWidth - 2 
+        : (internalWidth - 4) / 2; // Account for center divider
       const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
       const doorDepth = 1.5;
 
-      elements.push(
-        <Door
-          key="door"
-          width={doorWidth}
-          height={doorHeight}
-          depth={doorDepth}
-          position={[
-            0,
-            carcassThickness + doorHeight / 2,
-            (module.dimensions.depth - doorDepth) / 2,
-          ]}
-          color={facadeMaterial.props.color} // Используем цвет фасада
-        />,
-      );
+      for (let i = 0; i < structure.doorCount; i++) {
+        const doorX = structure.doorCount === 1 
+          ? 0 
+          : (i === 0 ? -doorWidth/2 - 1 : doorWidth/2 + 1);
+
+        elements.push(
+          <Door
+            key={`door-${i}`}
+            width={doorWidth}
+            height={doorHeight}
+            depth={doorDepth}
+            position={[
+              doorX,
+              carcassThickness + doorHeight / 2,
+              (module.dimensions.depth - doorDepth) / 2,
+            ]}
+            color={module.materials.facade?.color || "lightblue"}
+          />,
+        );
+      }
+
+      // Add center divider for double door cabinets
+      if (structure.doorCount === 2) {
+        elements.push(
+          <Box key="divider" position={[0, module.dimensions.height / 2, 0]} args={[1, module.dimensions.height - carcassThickness * 2, internalDepth]}>
+            <meshStandardMaterial color="#CCCCCC" />
+          </Box>
+        );
+      }
 
       return <>{elements}</>;
     }
@@ -160,14 +167,14 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
 
   return (
     <group position={[module.position.x, module.position.y, module.position.z]}>
-      {/* 1. Рисуем корпус из отдельных панелей */}
+      {/* 1. Draw the carcass frame */}
       <Carcass
         dimensions={module.dimensions}
         carcass={module.carcass}
         material={carcassMaterial}
       />
 
-      {/* 2. Рисуем внутренние элементы (ящики, дверцы, полки) */}
+      {/* 2. Draw internal elements (doors, shelves, drawers) */}
       {internalElements}
     </group>
   );
