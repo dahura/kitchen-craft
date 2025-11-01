@@ -1,25 +1,25 @@
 /**
  * geometry-based-cabinet.tsx
- * 
+ *
  * Example builder component that uses the geometry-generator utilities.
  * Demonstrates integration between the framework-agnostic geometry generator
  * and React Three Fiber components.
- * 
+ *
  * Part of Kitchen-Kraft MVP - MVP-02: Geometry Generator Core
  */
 
 "use client";
 
-import React, { useMemo, useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
-import type { RenderableModule } from '../../../../../core/types';
+import React, { useMemo, useRef, useEffect } from "react";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
+import type { RenderableModule } from "../../../../../core/types";
 import {
   generateModuleGeometry,
   createMeshesFromGeometryData,
   disposeGeometry,
   type ModuleGeometryData,
-} from './geometry-generator';
+} from "./geometry-generator";
 
 interface GeometryBasedCabinetProps {
   module: RenderableModule;
@@ -53,9 +53,9 @@ export const GeometryBasedCabinet: React.FC<GeometryBasedCabinetProps> = ({
     const group = createMeshesFromGeometryData(
       geometryData,
       module.position,
-      module.rotation
+      module.rotation,
     );
-    
+
     // Add interactivity metadata if needed
     if (interactive) {
       group.traverse((object) => {
@@ -66,7 +66,7 @@ export const GeometryBasedCabinet: React.FC<GeometryBasedCabinetProps> = ({
         }
       });
     }
-    
+
     return group;
   }, [geometryData, module.position, module.rotation, interactive]);
 
@@ -77,7 +77,7 @@ export const GeometryBasedCabinet: React.FC<GeometryBasedCabinetProps> = ({
       while (groupRef.current.children.length > 0) {
         groupRef.current.remove(groupRef.current.children[0]);
       }
-      
+
       // Add new meshes
       meshGroup.children.forEach((child) => {
         groupRef.current?.add(child.clone());
@@ -98,7 +98,7 @@ export const GeometryBasedCabinet: React.FC<GeometryBasedCabinetProps> = ({
       const targetScale = hovered ? 1.02 : 1.0;
       groupRef.current.scale.lerp(
         new THREE.Vector3(targetScale, targetScale, targetScale),
-        0.1
+        0.1,
       );
     }
   });
@@ -108,7 +108,7 @@ export const GeometryBasedCabinet: React.FC<GeometryBasedCabinetProps> = ({
       event.stopPropagation();
       setHovered(true);
       onHover?.(true);
-      document.body.style.cursor = 'pointer';
+      document.body.style.cursor = "pointer";
     }
   };
 
@@ -117,7 +117,7 @@ export const GeometryBasedCabinet: React.FC<GeometryBasedCabinetProps> = ({
       event.stopPropagation();
       setHovered(false);
       onHover?.(false);
-      document.body.style.cursor = 'auto';
+      document.body.style.cursor = "auto";
     }
   };
 
@@ -142,15 +142,15 @@ export const GeometryBasedCabinet: React.FC<GeometryBasedCabinetProps> = ({
  * Simplified version that directly renders meshes without interactivity
  * More performant for static scenes
  */
-export const SimpleGeometryBasedCabinet: React.FC<{ module: RenderableModule }> = ({
-  module,
-}) => {
+export const SimpleGeometryBasedCabinet: React.FC<{
+  module: RenderableModule;
+}> = ({ module }) => {
   const meshGroup = useMemo(() => {
     const geometryData = generateModuleGeometry(module);
     return createMeshesFromGeometryData(
       geometryData,
       module.position,
-      module.rotation
+      module.rotation,
     );
   }, [module]);
 
@@ -168,18 +168,19 @@ export const SimpleGeometryBasedCabinet: React.FC<{ module: RenderableModule }> 
 /**
  * Performance-optimized version using React.memo
  */
-export const OptimizedGeometryBasedCabinet = React.memo<GeometryBasedCabinetProps>(
-  GeometryBasedCabinet,
-  (prevProps, nextProps) => {
-    // Only re-render if module data actually changed
-    return (
-      prevProps.module.id === nextProps.module.id &&
-      prevProps.module.position === nextProps.module.position &&
-      prevProps.module.rotation === nextProps.module.rotation &&
-      prevProps.module.dimensions === nextProps.module.dimensions &&
-      prevProps.interactive === nextProps.interactive
-    );
-  }
-);
+export const OptimizedGeometryBasedCabinet =
+  React.memo<GeometryBasedCabinetProps>(
+    GeometryBasedCabinet,
+    (prevProps, nextProps) => {
+      // Only re-render if module data actually changed
+      return (
+        prevProps.module.id === nextProps.module.id &&
+        prevProps.module.position === nextProps.module.position &&
+        prevProps.module.rotation === nextProps.module.rotation &&
+        prevProps.module.dimensions === nextProps.module.dimensions &&
+        prevProps.interactive === nextProps.interactive
+      );
+    },
+  );
 
-OptimizedGeometryBasedCabinet.displayName = 'OptimizedGeometryBasedCabinet';
+OptimizedGeometryBasedCabinet.displayName = "OptimizedGeometryBasedCabinet";

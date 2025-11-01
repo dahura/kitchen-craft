@@ -28,8 +28,8 @@ export const RoomMaterialsPanel = () => {
     activeSurface === "ceiling"
       ? "ceilings"
       : activeSurface === "walls"
-      ? "walls"
-      : "floors"
+        ? "walls"
+        : "floors",
   );
 
   const handleColorChange = (color: string) => {
@@ -42,7 +42,7 @@ export const RoomMaterialsPanel = () => {
 
   const handlePropertyChange = (
     property: "roughness" | "metalness" | "scale",
-    value: number
+    value: number,
   ) => {
     updateMaterialProperties(activeSurface, { [property]: value });
   };
@@ -53,8 +53,8 @@ export const RoomMaterialsPanel = () => {
 
   const surfaceLabels = {
     walls: "Стены",
-    floor: "Пол", 
-    ceiling: "Потолок"
+    floor: "Пол",
+    ceiling: "Потолок",
   };
 
   return (
@@ -64,12 +64,23 @@ export const RoomMaterialsPanel = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Выбор поверхности */}
-        <Tabs value={activeSurface} onValueChange={(value) => setActiveSurface(value as "walls" | "floor" | "ceiling")}>
+        <Tabs
+          value={activeSurface}
+          onValueChange={(value) =>
+            setActiveSurface(value as "walls" | "floor" | "ceiling")
+          }
+        >
           <Label className="text-sm font-medium">Поверхность:</Label>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="walls" className="text-xs">Стены</TabsTrigger>
-            <TabsTrigger value="floor" className="text-xs">Пол</TabsTrigger>
-            <TabsTrigger value="ceiling" className="text-xs">Потолок</TabsTrigger>
+            <TabsTrigger value="walls" className="text-xs">
+              Стены
+            </TabsTrigger>
+            <TabsTrigger value="floor" className="text-xs">
+              Пол
+            </TabsTrigger>
+            <TabsTrigger value="ceiling" className="text-xs">
+              Потолок
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -86,7 +97,9 @@ export const RoomMaterialsPanel = () => {
               Цвет
             </Button>
             <Button
-              variant={currentMaterial.type === "texture" ? "default" : "outline"}
+              variant={
+                currentMaterial.type === "texture" ? "default" : "outline"
+              }
               size="sm"
               onClick={() =>
                 availableTextures.length > 0 &&
@@ -103,7 +116,10 @@ export const RoomMaterialsPanel = () => {
         {/* Выбор цвета */}
         {currentMaterial.type === "color" && (
           <div className="space-y-2">
-            <Label htmlFor={`color-${activeSurface}`} className="text-sm font-medium">
+            <Label
+              htmlFor={`color-${activeSurface}`}
+              className="text-sm font-medium"
+            >
               Цвет:
             </Label>
             <Input
@@ -123,7 +139,8 @@ export const RoomMaterialsPanel = () => {
             {availableTextures.length > 0 ? (
               <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto p-1">
                 {availableTextures.map((textureId) => {
-                  const isSelected = (currentMaterial.value as string) === textureId;
+                  const isSelected =
+                    (currentMaterial.value as string) === textureId;
                   const displayName = textureId
                     .replace(/-/g, " ")
                     .replace(/\b\w/g, (l) => l.toUpperCase());
@@ -136,20 +153,23 @@ export const RoomMaterialsPanel = () => {
                       onClick={() => handleTextureChange(textureId)}
                       className={cn(
                         "h-auto p-2 flex flex-col items-center gap-1 text-xs",
-                        isSelected && "ring-2 ring-primary"
+                        isSelected && "ring-2 ring-primary",
                       )}
                     >
                       <div className="w-8 h-8 rounded bg-gradient-to-br from-blue-400 to-purple-500 border flex items-center justify-center text-sm">
                         🎨
                       </div>
-                      <span className="leading-tight text-center">{displayName}</span>
+                      <span className="leading-tight text-center">
+                        {displayName}
+                      </span>
                     </Button>
                   );
                 })}
               </div>
             ) : (
               <div className="p-3 bg-muted rounded-md text-xs text-muted-foreground text-center">
-                Нет доступных текстур для {surfaceLabels[activeSurface].toLowerCase()}
+                Нет доступных текстур для{" "}
+                {surfaceLabels[activeSurface].toLowerCase()}
               </div>
             )}
           </div>
@@ -158,7 +178,10 @@ export const RoomMaterialsPanel = () => {
         {/* Свойства материала */}
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor={`roughness-${activeSurface}`} className="text-sm font-medium">
+            <Label
+              htmlFor={`roughness-${activeSurface}`}
+              className="text-sm font-medium"
+            >
               Шероховатость: {currentMaterial.roughness?.toFixed(2)}
             </Label>
             <Slider
@@ -167,13 +190,18 @@ export const RoomMaterialsPanel = () => {
               max={1}
               step={0.01}
               value={[currentMaterial.roughness || 0.8]}
-              onValueChange={(values) => handlePropertyChange("roughness", values[0])}
+              onValueChange={(values) =>
+                handlePropertyChange("roughness", values[0])
+              }
               className="w-full"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={`metalness-${activeSurface}`} className="text-sm font-medium">
+            <Label
+              htmlFor={`metalness-${activeSurface}`}
+              className="text-sm font-medium"
+            >
               Металличность: {currentMaterial.metalness?.toFixed(2)}
             </Label>
             <Slider
@@ -182,14 +210,19 @@ export const RoomMaterialsPanel = () => {
               max={1}
               step={0.01}
               value={[currentMaterial.metalness || 0]}
-              onValueChange={(values) => handlePropertyChange("metalness", values[0])}
+              onValueChange={(values) =>
+                handlePropertyChange("metalness", values[0])
+              }
               className="w-full"
             />
           </div>
 
           {currentMaterial.type === "texture" && (
             <div className="space-y-2">
-              <Label htmlFor={`scale-${activeSurface}`} className="text-sm font-medium">
+              <Label
+                htmlFor={`scale-${activeSurface}`}
+                className="text-sm font-medium"
+              >
                 Масштаб: {currentMaterial.scale?.toFixed(1)}
               </Label>
               <Slider
@@ -198,7 +231,9 @@ export const RoomMaterialsPanel = () => {
                 max={5}
                 step={0.1}
                 value={[currentMaterial.scale || 1]}
-                onValueChange={(values) => handlePropertyChange("scale", values[0])}
+                onValueChange={(values) =>
+                  handlePropertyChange("scale", values[0])
+                }
                 className="w-full"
               />
             </div>
