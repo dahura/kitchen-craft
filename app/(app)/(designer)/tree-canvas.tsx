@@ -6,6 +6,8 @@ import { Box } from "@react-three/drei";
 import * as THREE from "three";
 
 import { BaseCabinet } from "./components/builders/base-cabinet";
+import { UpperCabinet } from "./components/builders/upper-cabinet";
+import { TallCabinet } from "./components/builders/tall-cabinet";
 import { Plinth } from "./components/builders/plinth";
 import { Room } from "./components/room";
 import { RoomMaterialsPanel } from "./components/room-materials-panel";
@@ -72,7 +74,7 @@ export const SceneContent = () => {
 
   // Фильтруем только напольные модули для цоколя
   const baseModules = renderableModules.filter(
-    (module) => module.type === "base" || module.type === "sink",
+    (module) => module.type === "base" || module.type === "sink" || module.type === "tall",
   );
 
   // Получаем настройки цоколя из конфигурации
@@ -149,7 +151,13 @@ export const SceneContent = () => {
       {renderableModules.map((module) => {
         switch (module.type) {
           case "base":
+          case "sink":
             return <BaseCabinet key={module.id} module={module} />;
+          case "upper":
+          case "wall":
+            return <UpperCabinet key={module.id} module={module} />;
+          case "tall":
+            return <TallCabinet key={module.id} module={module} />;
           default:
             return <DefaultModule key={module.id} {...module} />;
         }

@@ -16,6 +16,22 @@ export const moduleLibrary: ModuleLibrary = {
   wall: {
     variants: {
       doors: { defaultHeight: 70, minWidth: 30, maxWidth: 120 },
+      single_door: { defaultHeight: 70, minWidth: 30, maxWidth: 80 },
+      double_door: { defaultHeight: 70, minWidth: 60, maxWidth: 120 },
+    },
+  },
+  upper: {
+    variants: {
+      doors: { defaultHeight: 70, minWidth: 30, maxWidth: 120 },
+      single_door: { defaultHeight: 70, minWidth: 30, maxWidth: 80 },
+      double_door: { defaultHeight: 70, minWidth: 60, maxWidth: 120 },
+    },
+  },
+  tall: {
+    variants: {
+      pantry: { defaultHeight: 220, minWidth: 40, maxWidth: 80 },
+      appliance: { defaultHeight: 220, minWidth: 60, maxWidth: 80 },
+      storage: { defaultHeight: 220, minWidth: 40, maxWidth: 100 },
     },
   },
 };
