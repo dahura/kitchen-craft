@@ -222,29 +222,17 @@ const Lighting: React.FC = () => {
  */
 const InfoPanel: React.FC = () => {
   return (
-    <div style={{
-      position: 'absolute',
-      top: 10,
-      left: 10,
-      background: 'rgba(0, 0, 0, 0.7)',
-      color: 'white',
-      padding: '15px',
-      borderRadius: '8px',
-      fontFamily: 'monospace',
-      fontSize: '12px',
-      zIndex: 1000,
-      maxWidth: '400px',
-    }}>
-      <h3 style={{ margin: '0 0 10px 0' }}>🧪 Geometry Generator Test Scene</h3>
-      <div style={{ lineHeight: '1.6' }}>
+    <div className="absolute top-2.5 left-2.5 bg-black/70 text-white p-4 rounded-lg font-mono text-xs z-[1000] max-w-md">
+      <h3 className="mb-2.5">🧪 Geometry Generator Test Scene</h3>
+      <div className="leading-relaxed">
         <div><strong>Module 1 (Blue):</strong> Interactive with hover/click</div>
         <div><strong>Module 2 (Red):</strong> Simple non-interactive</div>
         <div><strong>Module 3 (Green):</strong> Optimized variant</div>
-        <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #555' }}>
+        <div className="mt-2.5 pt-2.5 border-t border-muted-foreground/50">
           <div><strong>Purple & Orange:</strong> Generated via generateScene()</div>
           <div><strong>Left side:</strong> Basic geometry tests</div>
         </div>
-        <div style={{ marginTop: '10px', fontSize: '10px', color: '#aaa' }}>
+        <div className="mt-2.5 text-[10px] text-muted-foreground">
           Use mouse to orbit, zoom, and pan
         </div>
       </div>
@@ -257,12 +245,12 @@ const InfoPanel: React.FC = () => {
  */
 export const GeometryGeneratorTestScene: React.FC = () => {
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+    <div className="w-screen h-screen relative">
       <InfoPanel />
       <Canvas
         shadows
         camera={{ position: [200, 150, 200], fov: 45 }}
-        style={{ background: '#34495e' }}
+        className="bg-muted"
       >
         <Lighting />
         <FloorGrid />
