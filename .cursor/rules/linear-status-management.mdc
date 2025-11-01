@@ -1,0 +1,122 @@
+---
+alwaysApply: false
+description: Auto-update Linear issue statuses when performing task operations (starting work, creating PR, completing)
+---
+# Linear Issue Status Management
+
+This rule guides the assistant to **automatically update Linear issue statuses** at key workflow milestones. Use this whenever working on Linear tasks (KIT-XXX).
+
+## Status Transition Rules
+
+### 1. When Starting Work on an Issue
+**Trigger:** Creating a feature branch for a Linear issue
+**Action:** Update issue status to `In Progress`
+
+```typescript
+// After creating branch: feature/KIT-XX-...
+mcp_Linear_update_issue({
+  id: "KIT-XX",
+  state: "In Progress"
+});
+```
+
+**Also:** Add a comment to the issue:
+```
+[YYYY-MM-DD] Started: Created feature branch, analyzing requirements
+```
+
+### 2. When Code is Ready for Review
+**Trigger:** After pushing commits and before/after creating PR
+**Action:** Update issue status to `In Review`
+
+```typescript
+// After: git push && gh pr create
+mcp_Linear_update_issue({
+  id: "KIT-XX",
+  state: "In Review"
+});
+```
+
+**Also:** Add a comment linking to the PR:
+```
+[YYYY-MM-DD] Ready for review: PR #XXX created
+```
+
+### 3. When PR is Merged
+**Trigger:** PR is merged to main
+**Action:** Update issue status to `Done` (or `Completed`)
+
+```typescript
+// After PR merge confirmation
+mcp_Linear_update_issue({
+  id: "KIT-XX",
+  state: "Done"
+});
+```
+
+**Also:** Add a final comment:
+```
+[YYYY-MM-DD] Completed: PR merged, issue resolved
+```
+
+### 4. When User Confirms Fix is Working
+**Trigger:** User confirms local testing passed or fix is working
+**Action:** If PR not yet created, can optionally move to `In Review`. If PR exists, wait for merge.
+
+### 5. When Blocked or Paused
+**Trigger:** Work paused or blocked (waiting for user, external dependency)
+**Action:** Update issue status back to `Backlog` or keep `In Progress` with a comment explaining the pause.
+
+```typescript
+mcp_Linear_update_issue({
+  id: "KIT-XX",
+  state: "Backlog"  // or keep current state
+});
+// + comment explaining pause
+```
+
+### 6. When Reopening or Resuming
+**Trigger:** Resuming work on a closed/completed issue
+**Action:** Move back to `In Progress`
+
+```typescript
+mcp_Linear_update_issue({
+  id: "KIT-XX",
+  state: "In Progress"
+});
+```
+
+## Status Mapping
+
+Common Linear statuses (verify with team):
+- `Backlog` → Initial/default state
+- `Todo` → Ready to start
+- `In Progress` → Actively working
+- `In Review` → PR created, awaiting review
+- `Done` / `Completed` → Merged/closed
+
+**Note:** Exact status names may vary by team. Use `mcp_Linear_list_issue_statuses({ team: "Kitchen-kraft" })` to get accurate status names.
+
+## Implementation Checklist
+
+When working on any Linear task (KIT-XXX):
+
+- [ ] **Step 2 (Create branch):** Update to `In Progress` + comment
+- [ ] **Step 7 (Create PR):** Update to `In Review` + comment with PR link
+- [ ] **After merge:** Update to `Done` + final comment
+- [ ] **If blocked:** Comment and optionally revert status
+- [ ] **Always:** Use issue ID from branch name or Linear URL
+
+## Example Flow
+
+1. User: "Fix KIT-21"
+2. AI creates branch → Updates KIT-21 to `In Progress`
+3. AI implements fix → Commits code
+4. AI creates PR → Updates KIT-21 to `In Review`
+5. PR merged → Updates KIT-21 to `Done`
+
+## Error Handling
+
+- If status update fails, log warning but continue workflow
+- If status name not found, use `mcp_Linear_list_issue_statuses` to get correct names
+- Always verify issue ID before updating

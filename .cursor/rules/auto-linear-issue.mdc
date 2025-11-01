@@ -1,0 +1,40 @@
+---
+alwaysApply: false
+description: Auto-create a Linear issue when the user requests a bug/feature/task
+---
+# Auto Linear Issue Creation
+
+This rule guides the assistant whenever the user explicitly asks to **create a bug, feature or task** (in Russian or English). It should analyse the given description and file a Linear issue with sensible defaults.
+
+## Trigger phrases
+• "создай баг" / "создать баг"
+• "создай фичу" / "создать фичу"
+• "создай задачу"
+• "create bug"
+• "create feature"
+• "create task"
+
+## Language
+All Linear issues (title and description) must be created in **English**, regardless of the language used by the user. The assistant should translate the user's request into English before filing the issue.
+
+If any of these phrases (case-insensitive) appear at the beginning of the user message, treat it as a request to file an issue.
+
+## Required fields for Linear
+1. **Title** –  Use the first sentence or concise summary of the problem/feature.
+2. **Description** –  Full user-provided details plus any analysis.
+3. **Team** –  Default to the `Kitchen-Craft` team (ID: `KC`) unless the user specifies another.
+4. **State** –  `Backlog` for features, `Triage` for bugs.
+5. **Priority** (if missing)
+   • Bugs:  Urgent (1) if it blocks core workflow, otherwise High (2).
+   • Features:  Normal (3) unless user indicates urgency.
+6. **Labels** –  Add `bug` or `feature` automatically.
+7. **Due date** –  
+   • Urgent bug → today +1 day.
+   • High priority → today +3 days.
+   • Normal → today +14 days.
+
+## Procedure
+1. Parse user message → decide **type** (bug vs feature) & extract any explicit fields (priority, labels, due date, team).
+2. Fill missing fields using the defaults above.
+3. Call `mcp_Linear_create_issue` with assembled parameters.
+4. Confirm creation back to the user with the issue URL.

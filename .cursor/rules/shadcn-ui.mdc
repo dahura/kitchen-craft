@@ -1,0 +1,37 @@
+---
+alwaysApply: false
+description: Guidelines for integrating and using shadcn/ui components in Kitchen-Craft
+---
+# Shadcn/UI Component Guidelines
+
+This rule sets standards for installing and using [shadcn/ui](https://ui.shadcn.com/) components.
+
+## Scope
+Applies to any change that adds or modifies UI components inside `app/`.
+
+## Installation
+1. Use the provided automation:
+   ```bash
+   bunx shadcn-ui@latest init
+   ```
+2. Add new components via the helper script (or automated tool):
+   ```bash
+   bunx shadcn-ui@latest add <component>
+   ```
+3. **Never** copy-paste source files directly from the repo. Always use the generator so tokens & config stay in sync.
+
+## Configuration Rules
+• Keep `tailwind.config.ts` and `components.json` in sync with generator prompts.
+• Commit generated components under `components/ui/` — do not rename or move.
+• If you need to override a component, prefer creating a thin wrapper instead of editing generated code.
+
+## Styling Conventions
+• Components rely on Tailwind **theme** tokens (see `tailwind.config.ts`).
+• Use the `cn()` helper for class merging.
+• Follow the tailwind-theme rule (see separate rule) — **no hard-coded color classes**.
+
+## Upgrades
+• Run `bunx shadcn-ui@latest list:update` to list outdated components.
+• Upgrade in small PRs; one component per commit when possible.
+
+Violations should be flagged during code review.

@@ -1,0 +1,128 @@
+---
+alwaysApply: false
+description: Standard developer workflow for starting and completing a task (branching, commits, PR, Linear notes)
+---
+# Kitchen-Craft Task Workflow
+
+Use this checklist whenever you (or the AI) **start working on a new Linear task**. Follow the steps in order and keep history tidy.
+
+**Status Management:** See [linear-status-management.mdc](mdc:.cursor/rules/linear-status-management.mdc) for automatic Linear status updates at each step.
+
+## 1. Sync `main`
+```bash
+git switch main
+git pull --ff-only
+```
+
+## 2. Create feature branch
+Branch name pattern:
+```
+feature/KIT-<IssueNumber>-<slugified-title>
+```
+Examples:
+```
+feature/KIT-42-fix-validation-crash
+feature/KIT-128-room-texture-refactor
+```
+
+**After creating branch:** Update Linear issue status to `In Progress` and add comment:
+```typescript
+mcp_Linear_update_issue({
+  id: "KIT-XX",
+  state: "In Progress"
+});
+mcp_Linear_create_comment({
+  issueId: "KIT-XX",
+  body: `[${new Date().toISOString().split('T')[0]}] Started: Created feature branch, analyzing requirements`
+});
+```
+
+## 3. Study the task
+• Read description, comments, acceptance criteria.  
+• Open related files in IDE.  
+• Draft a todo list (_Cursor `todo_write`_).
+
+## 4. Implement changes
+• Make **small, incremental commits** (scope = one logical change).  
+• **Stage only files touched for this task**: `git add <paths>`.
+
+## 5. Pause & write local test guide
+Before asking for user review, post a message:
+> _"Изменения готовы к локальному тесту. Запустите `bun dev` и перейдите на http://localhost:3000. Особое внимание: …"_
+
+Wait for user confirmation/feedback.
+
+## 6. Final commit & push
+```bash
+git commit -m "KIT-<IssueNumber>: <concise summary>"
+git push --set-upstream origin $(git branch --show-current)
+```
+
+## 7. Open PR via `gh`
+Run:
+```bash
+gh pr create --base main --fill
+```
+
+**After creating PR:** Update Linear issue status to `In Review` and add comment with PR link:
+```typescript
+mcp_Linear_update_issue({
+  id: "KIT-XX",
+  state: "In Review"
+});
+mcp_Linear_create_comment({
+  issueId: "KIT-XX",
+  body: `[${new Date().toISOString().split('T')[0]}] Ready for review: PR #XXX created - <PR_URL>`
+});
+```
+
+### PR Template (auto-fill)
+```
+### Linked Issue
+KIT-<IssueNumber>
+
+### Change Summary
+- Short bullet 1
+- Short bullet 2
+
+### Test Instructions
+1. bun install (if deps)
+2. bun dev
+3. Go to http://localhost:3000 and …
+
+### Screenshots / GIF
+<optional>
+
+### Checklist
+- [ ] Code builds (`bun test` & lint pass)
+- [ ] Only task-related files changed
+- [ ] Documentation updated if needed
+```
+
+## 8. Linear comments as memory log
+For long-running tasks, log progress in Linear comments using the pattern:
+```
+[YYYY-MM-DD] <verb>: <short action>
+```
+Example:
+```
+[2025-10-31] Analyzed validator-engine crash root cause
+[2025-11-02] Implemented fix + unit tests, awaiting review
+```
+
+When resuming, **always read latest Linear comments** and continue.
+
+## 9. After PR Merge (if applicable)
+When PR is merged to main, update Linear issue status to `Done`:
+```typescript
+mcp_Linear_update_issue({
+  id: "KIT-XX",
+  state: "Done"
+});
+mcp_Linear_create_comment({
+  issueId: "KIT-XX",
+  body: `[${new Date().toISOString().split('T')[0]}] Completed: PR merged, issue resolved`
+});
+```
+
+**Note:** If user confirms fix works before PR merge, you may update status to `In Review` earlier. Always verify correct status names using `mcp_Linear_list_issue_statuses({ team: "Kitchen-kraft" })`.

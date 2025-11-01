@@ -285,9 +285,9 @@ export interface EnhancedGlobalSettings extends GlobalSettings {
 // --- НОВЫЕ ИНТЕРФЕЙСЫ ДЛЯ ТЕКСТУР КОМНАТ ---
 
 interface RoomTextureSet {
-  diffuse?: string;      // Base color map
-  normal?: string;       // Normal map
-  roughness?: string;    // Roughness map
+  diffuse?: string; // Base color map
+  normal?: string; // Normal map
+  roughness?: string; // Roughness map
   displacement?: string; // Height/displacement map
   ambientOcclusion?: string; // AO map (опционально)
 }
@@ -297,7 +297,7 @@ interface RoomSurfaceMaterial {
   value: string | RoomTextureSet;
   roughness?: number;
   metalness?: number;
-  scale?: number;        // Масштаб текстуры
+  scale?: number; // Масштаб текстуры
 }
 
 interface RoomMaterials {
@@ -311,7 +311,6 @@ interface RoomTextureLibrary {
   floors: Record<string, RoomTextureSet>;
   ceilings: Record<string, RoomTextureSet>;
 }
-
 
 // Утилита для создания значений по умолчанию
 export const createDefaultRoomMaterials = (): RoomMaterials => ({
@@ -345,5 +344,5 @@ export type {
   RoomTextureSet,
   RoomSurfaceMaterial,
   RoomMaterials,
-  RoomTextureLibrary
+  RoomTextureLibrary,
 };

@@ -1,0 +1,24 @@
+---
+alwaysApply: false
+description: Enforce Tailwind theme tokens; forbid hard-coded utility colours
+---
+# Tailwind Theme-Only Classes Rule
+
+Kitchen-Craft uses a strict design system powered by Tailwind CSS `theme()` tokens. **Do not** use hard-coded colour utilities like `text-gray-500`, `bg-red-600`, `border-slate-200`, etc.
+
+## Allowed
+• `text-primary`, `bg-secondary`, `border-input`, etc. (Tokens defined in `tailwind.config.ts`).
+• Programmatic usage: `className={cn('text-muted', condition && 'bg-accent')}` where all classes come from theme.
+
+## Disallowed
+• Any colour class that encodes numeric shade or direct colour, e.g. `text-gray-500`, `bg-[#ff0000]`.
+• Arbitrary hex/RGB values in `className` or inline style.
+
+## Migration
+When encountering disallowed classes:
+1. Map to closest token in design system.
+2. If missing, extend palette in `tailwind.config.ts`.
+
+CI should fail if lint detects banned patterns. Reviewers must enforce this rule.
+
+> Tip: Use Tailwind IntelliSense to autocomplete theme tokens.
