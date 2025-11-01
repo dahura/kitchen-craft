@@ -58,16 +58,23 @@ export function generateWithCentering(
 
     let currentX = 0;
     for (const module of processedModules) {
+      // Position the module so its center is at the correct location
+      // For the first module, center it at width/2 from the origin
+      // For subsequent modules, position so they touch the previous module
+      const modulePosition = currentX + module.finalWidth / 2;
+      
       const renderableModule = createRenderableModule(
         module,
-        { x: currentX, y: 0, z: 0 },
+        { x: modulePosition, y: 0, z: 0 },
         lineRotation,
         globalSettings,
         defaultMaterials,
         materialLibrary,
       );
       renderableModules.push(renderableModule);
-      currentX += module.finalWidth + globalSettings.rules.gapBetweenModules; // finalWidth гарантированно есть после processModulesOnLine
+      
+      // Move to the next position: current position + module width + gap
+      currentX += module.finalWidth + globalSettings.rules.gapBetweenModules;
     }
   }
 
