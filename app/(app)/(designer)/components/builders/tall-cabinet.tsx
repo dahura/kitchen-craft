@@ -5,6 +5,7 @@ import type { RenderableModule } from "../../../../../core/types";
 import { useMemo } from "react";
 import { Carcass } from "./carcass";
 import { AnimatedDoor, DoubleDoor } from "./animated-door";
+import { FACADE_GAP } from "./constants";
 
 /**
  * Tall Cabinet Builder Component
@@ -64,25 +65,46 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
 
     if (structure.type === "drawers") {
       const elements = [];
+      const availableHeight = module.dimensions.height - carcassThickness * 2;
+      const totalDrawerHeight = structure.drawerHeights.reduce(
+        (sum, h) => sum + h,
+        0
+      );
+      const totalGapHeight = FACADE_GAP * (structure.count - 1); // Зазоры только между ящиками
+      const scaleFactor =
+        (availableHeight - totalGapHeight) / totalDrawerHeight;
+
       let currentY = carcassThickness; // Start from bottom
 
       for (let i = 0; i < structure.count; i++) {
-        const drawerHeight = structure.drawerHeights[i];
+        const scaledDrawerHeight = structure.drawerHeights[i] * scaleFactor;
+        const isLastDrawer = i === structure.count - 1;
+        // У последнего ящика нет зазора сверху, у остальных - есть
+        const actualDrawerHeight = isLastDrawer
+          ? scaledDrawerHeight
+          : scaledDrawerHeight - FACADE_GAP;
+
         elements.push(
           <Drawer
             key={i}
-            width={internalWidth} // No gaps for contiguous fit
-            height={drawerHeight - 2} // Small gap on top
+            width={internalWidth}
+            height={actualDrawerHeight}
             depth={structure.internalDepth}
             position={[
               0,
-              currentY + drawerHeight / 2,
+              currentY + actualDrawerHeight / 2,
               (module.dimensions.depth - structure.internalDepth) / 2,
             ]}
             color="#8B4513" // Drawer color
           />
         );
-        currentY += drawerHeight + 1; // Add drawer height and gap
+
+        // Добавляем масштабированную высоту ящика (для промежуточных - зазор учтен в actualDrawerHeight)
+        currentY += scaledDrawerHeight;
+        // Добавляем зазор после ящика (кроме последнего)
+        if (!isLastDrawer) {
+          currentY += FACADE_GAP;
+        }
       }
       return <>{elements}</>;
     }
@@ -105,7 +127,8 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
 
       // Draw animated doors - tall cabinets typically have 2 doors
       const doorWidth = internalWidth;
-      const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
+      const doorHeight =
+        module.dimensions.height - carcassThickness * 2 - FACADE_GAP * 2;
       const doorDepth = 1.5;
 
       if (structure.doorCount === 1) {
@@ -142,7 +165,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
               (module.dimensions.depth - doorDepth) / 2,
             ]}
             color={module.materials.facade?.color || "#8B7355"}
-            gap={4} // Gap for center divider
+            gap={0} // No gap - modern kitchen style
             config={{
               openAngle: Math.PI / 2.5, // Tall cabinets open moderately
               duration: 1000, // Slower for tall doors

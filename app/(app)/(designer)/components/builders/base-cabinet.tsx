@@ -5,6 +5,7 @@ import type { RenderableModule } from "../../../../../core/types";
 import { useMemo } from "react";
 import { Carcass } from "./carcass";
 import { AnimatedDoor, DoubleDoor } from "./animated-door";
+import { FACADE_GAP } from "./constants";
 
 /**
  * NOTE: This component uses the declarative @react-three/drei approach.
@@ -75,25 +76,46 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
 
     if (structure.type === "drawers") {
       const elements = [];
+      const availableHeight = module.dimensions.height - carcassThickness * 2;
+      const totalDrawerHeight = structure.drawerHeights.reduce(
+        (sum, h) => sum + h,
+        0
+      );
+      const totalGapHeight = FACADE_GAP * (structure.count - 1); // Зазоры только между ящиками
+      const scaleFactor =
+        (availableHeight - totalGapHeight) / totalDrawerHeight;
+
       let currentY = carcassThickness; // Начинаем с дна
 
       for (let i = 0; i < structure.count; i++) {
-        const drawerHeight = structure.drawerHeights[i];
+        const scaledDrawerHeight = structure.drawerHeights[i] * scaleFactor;
+        const isLastDrawer = i === structure.count - 1;
+        // У последнего ящика нет зазора сверху, у остальных - есть
+        const actualDrawerHeight = isLastDrawer
+          ? scaledDrawerHeight
+          : scaledDrawerHeight - FACADE_GAP;
+
         elements.push(
           <Drawer
             key={i}
-            width={internalWidth} // No gaps for contiguous fit
-            height={drawerHeight - 2} // Небольшой зазор сверху
+            width={internalWidth}
+            height={actualDrawerHeight}
             depth={structure.internalDepth}
             position={[
               0,
-              currentY + drawerHeight / 2,
+              currentY + actualDrawerHeight / 2,
               (module.dimensions.depth - structure.internalDepth) / 2,
             ]}
             color="#8B4513" // Цвет ящиков
           />
         );
-        currentY += drawerHeight + 1; // Прибавляем высоту ящика и зазор
+
+        // Добавляем масштабированную высоту ящика (для промежуточных - зазор учтен в actualDrawerHeight)
+        currentY += scaledDrawerHeight;
+        // Добавляем зазор после ящика (кроме последнего)
+        if (!isLastDrawer) {
+          currentY += FACADE_GAP;
+        }
       }
       return <>{elements}</>;
     }
@@ -115,7 +137,8 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
 
       // 2. Рисуем анимированную дверцу
       const doorWidth = internalWidth;
-      const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
+      const doorHeight =
+        module.dimensions.height - carcassThickness * 2 - FACADE_GAP * 2;
       const doorDepth = 1.5;
 
       // Determine if we need single or double door based on width
@@ -134,7 +157,7 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
               (module.dimensions.depth - doorDepth) / 2,
             ]}
             color={module.materials.facade?.color || "#8B7355"}
-            gap={2}
+            gap={0}
           />
         );
       } else {

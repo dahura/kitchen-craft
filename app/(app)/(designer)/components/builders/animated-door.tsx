@@ -251,7 +251,7 @@ export const DoubleDoor: React.FC<DoubleDoorProps> = ({
   position,
   color = "#8B7355",
   config = {},
-  gap = 2,
+  gap = 0,
 }) => {
   const doorWidth = (width - gap) / 2;
 
