@@ -38,20 +38,7 @@ const Drawer = ({ width, height, depth, position, color }: DrawerProps) => (
   </Box>
 );
 
-interface DoorProps {
-  width: number;
-  height: number;
-  depth: number;
-  position: [number, number, number];
-  color: string;
-}
-
 // Legacy Door component - replaced by AnimatedDoor
-// const Door = ({ width, height, depth, position, color }: DoorProps) => (
-//   <Box position={position} args={[width, height, depth]}>
-//     <meshStandardMaterial color={color} />
-//   </Box>
-// );
 
 interface ShelfProps {
   width: number;
@@ -72,14 +59,6 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
   const carcassMaterial = useMemo(
     () => <meshStandardMaterial color="#CCCCCC" />,
     []
-  );
-  const facadeMaterial = useMemo(
-    () => (
-      <meshStandardMaterial
-        color={module.materials.facade?.color || "lightblue"}
-      />
-    ),
-    [module.materials.facade?.color]
   );
 
   // Генерируем внутренние элементы на основе структуры
@@ -134,7 +113,7 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
         />
       );
 
-      // 2. Рисуем дверцу
+      // 2. Рисуем анимированную дверцу
       const doorWidth = internalWidth;
       const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
       const doorDepth = 1.5;
@@ -179,7 +158,7 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
     }
 
     return null;
-  }, [module, facadeMaterial]);
+  }, [module]);
 
   return (
     <group position={[module.position.x, module.position.y, module.position.z]}>

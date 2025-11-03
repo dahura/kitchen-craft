@@ -51,7 +51,7 @@ export const easeInOutCubic = (t: number): number =>
   match(t)
     .when(
       (t) => t < 0.5,
-      (t) => 4 * t * t * t,
+      (t) => 4 * t * t * t
     )
     ._(() => 1 - Math.pow(-2 * t + 2, 3) / 2)
     .run() as number;
@@ -60,11 +60,11 @@ export const easeOutElastic = (t: number): number =>
   match(t)
     .when(
       (t) => t === 0,
-      () => 0,
+      () => 0
     )
     .when(
       (t) => t === 1,
-      () => 1,
+      () => 1
     )
     ._(() => {
       const c4 = (2 * Math.PI) / 3;
@@ -76,15 +76,15 @@ export const easeOutBounce = (t: number): number => {
   return match(t)
     .when(
       (t) => t < 1 / 2.75,
-      (t) => 7.5625 * t * t,
+      (t) => 7.5625 * t * t
     )
     .when(
       (t) => t < 2 / 2.75,
-      (t) => 7.5625 * (t -= 1.5 / 2.75) * t + 0.75,
+      (t) => 7.5625 * (t -= 1.5 / 2.75) * t + 0.75
     )
     .when(
       (t) => t < 2.5 / 2.75,
-      (t) => 7.5625 * (t -= 2.25 / 2.75) * t + 0.9375,
+      (t) => 7.5625 * (t -= 2.25 / 2.75) * t + 0.9375
     )
     ._((t) => 7.5625 * (t -= 2.625 / 2.75) * t + 0.984375)
     .run() as number;
@@ -97,7 +97,7 @@ export const easeOutBounce = (t: number): number => {
 export function animate(
   duration: number,
   easingFunction: (t: number) => number,
-  callback: (progress: number) => void,
+  callback: (progress: number) => void
 ) {
   const start = performance.now();
 
@@ -153,7 +153,7 @@ export class DoorAnimationController {
 
   constructor(
     config: Partial<DoorAnimationConfig> = {},
-    onStateChange?: (state: DoorAnimationState) => void,
+    onStateChange?: (state: DoorAnimationState) => void
   ) {
     this.config = { ...DEFAULT_DOOR_CONFIG, ...config };
     this.onStateChange = onStateChange;
@@ -232,9 +232,8 @@ export class DoorAnimationController {
   private playSound(type: "open" | "close"): void {
     // Create a simple audio context for sound effects
     try {
-      const audioContext = new (
-        window.AudioContext || (window as any).webkitAudioContext
-      )();
+      const audioContext = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 
@@ -244,7 +243,7 @@ export class DoorAnimationController {
       // Different frequencies for open/close sounds
       oscillator.frequency.setValueAtTime(
         type === "open" ? 800 : 400,
-        audioContext.currentTime,
+        audioContext.currentTime
       );
       oscillator.type = "sine";
 
@@ -252,7 +251,7 @@ export class DoorAnimationController {
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
       gainNode.gain.linearRampToValueAtTime(
         0.1,
-        audioContext.currentTime + 0.01,
+        audioContext.currentTime + 0.01
       );
       gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
 

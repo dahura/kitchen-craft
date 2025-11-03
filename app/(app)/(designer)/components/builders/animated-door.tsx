@@ -56,7 +56,7 @@ export const AnimatedDoor: React.FC<AnimatedDoorProps> = ({
 
   // State for tracking animation
   const [animationState, setAnimationState] = useState<DoorAnimationState>(
-    controller.getState(),
+    controller.getState()
   );
 
   // Update animation state when controller changes
@@ -68,7 +68,7 @@ export const AnimatedDoor: React.FC<AnimatedDoorProps> = ({
     // Set up the controller callback
     const newController = new DoorAnimationController(
       { ...DEFAULT_DOOR_CONFIG, ...config },
-      handleStateChange,
+      handleStateChange
     );
 
     return () => {
@@ -87,7 +87,7 @@ export const AnimatedDoor: React.FC<AnimatedDoorProps> = ({
       const targetScale = hovered ? 1.2 : 1.0;
       pivotCubeRef.current.scale.lerp(
         new THREE.Vector3(targetScale, targetScale, targetScale),
-        0.1,
+        0.1
       );
     }
   });

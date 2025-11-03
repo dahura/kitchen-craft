@@ -28,20 +28,7 @@ const Drawer = ({ width, height, depth, position, color }: DrawerProps) => (
   </Box>
 );
 
-interface DoorProps {
-  width: number;
-  height: number;
-  depth: number;
-  position: [number, number, number];
-  color: string;
-}
-
 // Legacy Door component - replaced by AnimatedDoor
-// const Door = ({ width, height, depth, position, color }: DoorProps) => (
-//   <Box position={position} args={[width, height, depth]}>
-//     <meshStandardMaterial color={color} />
-//   </Box>
-// );
 
 interface ShelfProps {
   width: number;
@@ -61,15 +48,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
   // Create materials once for optimization
   const carcassMaterial = useMemo(
     () => <meshStandardMaterial color="#CCCCCC" />,
-    [],
-  );
-  const facadeMaterial = useMemo(
-    () => (
-      <meshStandardMaterial
-        color={module.materials.facade?.color || "lightblue"}
-      />
-    ),
-    [module.materials.facade?.color],
+    []
   );
 
   // Generate internal elements based on structure
@@ -101,7 +80,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
               (module.dimensions.depth - structure.internalDepth) / 2,
             ]}
             color="#8B4513" // Drawer color
-          />,
+          />
         );
         currentY += drawerHeight + 1; // Add drawer height and gap
       }
@@ -112,32 +91,25 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
       const elements = [];
 
       // Draw multiple shelves - tall cabinets have many shelves
-      structure.shelves.forEach((shelf, index) => {
+      structure.shelves.forEach((shelf) => {
         elements.push(
           <Shelf
-            key={`shelf-${index}`}
+            key={`shelf-${shelf.positionFromBottom}`}
             width={internalWidth}
             depth={internalDepth - 1}
             position={[0, shelf.positionFromBottom, 0]}
             color="#D2691E" // Shelf color
-          />,
+          />
         );
       });
 
-      // Draw doors - tall cabinets typically have 2 doors
-      const doorWidth =
-        structure.doorCount === 1 ? internalWidth : internalWidth / 2; // No gaps between doors
+      // Draw animated doors - tall cabinets typically have 2 doors
+      const doorWidth = internalWidth;
       const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
       const doorDepth = 1.5;
 
-      for (let i = 0; i < structure.doorCount; i++) {
-        const doorX =
-          structure.doorCount === 1
-            ? 0
-            : i === 0
-              ? -doorWidth / 2
-              : doorWidth / 2;
-
+      if (structure.doorCount === 1) {
+        // Single door for narrow tall cabinets
         elements.push(
           <AnimatedDoor
             key="single-door"
@@ -161,7 +133,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
         elements.push(
           <DoubleDoor
             key="double-door"
-            width={doorWidth * 2 + 4} // Total width including divider
+            width={doorWidth}
             height={doorHeight}
             depth={doorDepth}
             position={[
@@ -192,7 +164,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
             ]}
           >
             <meshStandardMaterial color="#CCCCCC" />
-          </Box>,
+          </Box>
         );
       }
 
@@ -200,7 +172,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
     }
 
     return null;
-  }, [module, facadeMaterial]);
+  }, [module]);
 
   return (
     <group position={[module.position.x, module.position.y, module.position.z]}>
