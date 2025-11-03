@@ -4,6 +4,7 @@ import { Box } from "@react-three/drei";
 import type { RenderableModule } from "../../../../../core/types";
 import { useMemo } from "react";
 import { Carcass } from "./carcass";
+import { AnimatedDoor, DoubleDoor } from "./animated-door";
 
 /**
  * NOTE: This component uses the declarative @react-three/drei approach.
@@ -45,11 +46,12 @@ interface DoorProps {
   color: string;
 }
 
-const Door = ({ width, height, depth, position, color }: DoorProps) => (
-  <Box position={position} args={[width, height, depth]}>
-    <meshStandardMaterial color={color} />
-  </Box>
-);
+// Legacy Door component - replaced by AnimatedDoor
+// const Door = ({ width, height, depth, position, color }: DoorProps) => (
+//   <Box position={position} args={[width, height, depth]}>
+//     <meshStandardMaterial color={color} />
+//   </Box>
+// );
 
 interface ShelfProps {
   width: number;
@@ -132,25 +134,46 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
         />,
       );
 
-      // 2. Рисуем дверцу
+      // 2. Рисуем анимированную дверцу
       const doorWidth = internalWidth - 2;
       const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
       const doorDepth = 1.5;
 
-      elements.push(
-        <Door
-          key="door"
-          width={doorWidth}
-          height={doorHeight}
-          depth={doorDepth}
-          position={[
-            0,
-            carcassThickness + doorHeight / 2,
-            (module.dimensions.depth - doorDepth) / 2,
-          ]}
-          color={facadeMaterial.props.color} // Используем цвет фасада
-        />,
-      );
+      // Determine if we need single or double door based on width
+      const useDoubleDoor = doorWidth > 60; // Use double door for wide cabinets
+
+      if (useDoubleDoor) {
+        elements.push(
+          <DoubleDoor
+            key="double-door"
+            width={doorWidth}
+            height={doorHeight}
+            depth={doorDepth}
+            position={[
+              0,
+              carcassThickness + doorHeight / 2,
+              (module.dimensions.depth - doorDepth) / 2,
+            ]}
+            color={module.materials.facade?.color || "#8B7355"}
+            gap={2}
+          />
+        );
+      } else {
+        elements.push(
+          <AnimatedDoor
+            key="single-door"
+            width={doorWidth}
+            height={doorHeight}
+            depth={doorDepth}
+            position={[
+              0,
+              carcassThickness + doorHeight / 2,
+              (module.dimensions.depth - doorDepth) / 2,
+            ]}
+            color={module.materials.facade?.color || "#8B7355"}
+          />
+        );
+      }
 
       return <>{elements}</>;
     }
