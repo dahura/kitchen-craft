@@ -156,8 +156,6 @@ export const SceneContent = () => {
           case "upper":
           case "wall":
             return <UpperCabinet key={module.id} module={module} />;
-          case "tall":
-            return <TallCabinet key={module.id} module={module} />;
           default:
             return <DefaultModule key={module.id} {...module} />;
         }
