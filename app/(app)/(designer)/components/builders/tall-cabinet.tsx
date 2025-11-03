@@ -4,6 +4,7 @@ import { Box } from "@react-three/drei";
 import type { RenderableModule } from "../../../../../core/types";
 import { useMemo } from "react";
 import { Carcass } from "./carcass";
+import { AnimatedDoor, DoubleDoor } from "./animated-door";
 
 /**
  * Tall Cabinet Builder Component
@@ -35,11 +36,12 @@ interface DoorProps {
   color: string;
 }
 
-const Door = ({ width, height, depth, position, color }: DoorProps) => (
-  <Box position={position} args={[width, height, depth]}>
-    <meshStandardMaterial color={color} />
-  </Box>
-);
+// Legacy Door component - replaced by AnimatedDoor
+// const Door = ({ width, height, depth, position, color }: DoorProps) => (
+//   <Box position={position} args={[width, height, depth]}>
+//     <meshStandardMaterial color={color} />
+//   </Box>
+// );
 
 interface ShelfProps {
   width: number;
@@ -122,31 +124,53 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
         );
       });
 
-      // Draw doors - tall cabinets typically have 2 doors
+      // Draw animated doors - tall cabinets typically have 2 doors
       const doorWidth = structure.doorCount === 1 
         ? internalWidth - 2 
         : (internalWidth - 4) / 2; // Account for center divider
       const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
       const doorDepth = 1.5;
 
-      for (let i = 0; i < structure.doorCount; i++) {
-        const doorX = structure.doorCount === 1 
-          ? 0 
-          : (i === 0 ? -doorWidth/2 - 1 : doorWidth/2 + 1);
-
+      if (structure.doorCount === 1) {
+        // Single door for narrow tall cabinets
         elements.push(
-          <Door
-            key={`door-${i}`}
+          <AnimatedDoor
+            key="single-door"
             width={doorWidth}
             height={doorHeight}
             depth={doorDepth}
             position={[
-              doorX,
+              0,
               carcassThickness + doorHeight / 2,
               (module.dimensions.depth - doorDepth) / 2,
             ]}
-            color={module.materials.facade?.color || "lightblue"}
-          />,
+            color={module.materials.facade?.color || "#8B7355"}
+            config={{
+              openAngle: Math.PI / 2.5, // Tall cabinets open moderately
+              duration: 1000, // Slower for tall doors
+            }}
+          />
+        );
+      } else if (structure.doorCount === 2) {
+        // Double doors for wide tall cabinets
+        elements.push(
+          <DoubleDoor
+            key="double-door"
+            width={doorWidth * 2 + 4} // Total width including divider
+            height={doorHeight}
+            depth={doorDepth}
+            position={[
+              0,
+              carcassThickness + doorHeight / 2,
+              (module.dimensions.depth - doorDepth) / 2,
+            ]}
+            color={module.materials.facade?.color || "#8B7355"}
+            gap={4} // Gap for center divider
+            config={{
+              openAngle: Math.PI / 2.5, // Tall cabinets open moderately
+              duration: 1000, // Slower for tall doors
+            }}
+          />
         );
       }
 

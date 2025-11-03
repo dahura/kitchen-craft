@@ -1,3 +1,24 @@
+# Kitchen-Craft
+
+A Next.js-based kitchen design application with interactive 3D cabinet visualization and door animations.
+
+## Features
+
+### ?? Interactive Door Animations (NEW)
+- **Cube-based pivot mechanism**: Doors rotate around visible hinge cubes
+- **Multiple easing functions**: Smooth, elastic, and bounce animations
+- **Sound effects**: Audio feedback for opening/closing actions
+- **Smart door selection**: Automatic single/double door configuration based on cabinet width
+- **Cabinet-specific settings**: Optimized animations for base, upper, and tall cabinets
+
+See [DOOR_ANIMATIONS.md](./DOOR_ANIMATIONS.md) for detailed documentation.
+
+### ??? Architecture
+- **Framework-agnostic core**: Business logic separated from UI layer
+- **Three.js integration**: 3D cabinet rendering with React Three Fiber
+- **Type-safe**: Full TypeScript coverage with strict type checking
+- **Performance optimized**: Memoized components and efficient animation loops
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
