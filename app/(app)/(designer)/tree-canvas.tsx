@@ -74,7 +74,10 @@ export const SceneContent = () => {
 
   // Фильтруем только напольные модули для цоколя
   const baseModules = renderableModules.filter(
-    (module) => module.type === "base" || module.type === "sink" || module.type === "tall",
+    (module) =>
+      module.type === "base" ||
+      module.type === "sink" ||
+      module.type === "tall",
   );
 
   // Получаем настройки цоколя из конфигурации

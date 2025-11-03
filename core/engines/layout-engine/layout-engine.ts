@@ -58,7 +58,9 @@ export function generateWithCentering(
 
     // Determine along which axis the line extends (X or Z) and its direction (+/-)
     const isXAxis = Math.abs(line.direction.x) === 1;
-    const sign = isXAxis ? Math.sign(line.direction.x) : Math.sign(line.direction.z);
+    const sign = isXAxis
+      ? Math.sign(line.direction.x)
+      : Math.sign(line.direction.z);
 
     // Accumulator measuring distance from the line start (always positive)
     let currentOffset = 0;
@@ -86,7 +88,8 @@ export function generateWithCentering(
       renderableModules.push(renderableModule);
 
       // Increment offset: module width + configured gap (always positive)
-      currentOffset += module.finalWidth + globalSettings.rules.gapBetweenModules;
+      currentOffset +=
+        module.finalWidth + globalSettings.rules.gapBetweenModules;
     }
   }
 

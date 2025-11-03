@@ -8,7 +8,7 @@ import { AnimatedDoor, DoubleDoor } from "./animated-door";
 
 /**
  * Tall Cabinet Builder Component
- * 
+ *
  * Renders floor-to-ceiling tall cabinets (pantries, appliance housings, etc.).
  * These cabinets are typically 200-220cm tall and can have mixed storage solutions.
  */
@@ -28,20 +28,7 @@ const Drawer = ({ width, height, depth, position, color }: DrawerProps) => (
   </Box>
 );
 
-interface DoorProps {
-  width: number;
-  height: number;
-  depth: number;
-  position: [number, number, number];
-  color: string;
-}
-
 // Legacy Door component - replaced by AnimatedDoor
-// const Door = ({ width, height, depth, position, color }: DoorProps) => (
-//   <Box position={position} args={[width, height, depth]}>
-//     <meshStandardMaterial color={color} />
-//   </Box>
-// );
 
 interface ShelfProps {
   width: number;
@@ -61,15 +48,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
   // Create materials once for optimization
   const carcassMaterial = useMemo(
     () => <meshStandardMaterial color="#CCCCCC" />,
-    [],
-  );
-  const facadeMaterial = useMemo(
-    () => (
-      <meshStandardMaterial
-        color={module.materials.facade?.color || "lightblue"}
-      />
-    ),
-    [module.materials.facade?.color],
+    []
   );
 
   // Generate internal elements based on structure
@@ -92,7 +71,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
         elements.push(
           <Drawer
             key={i}
-            width={internalWidth - 2} // Small gap on sides
+            width={internalWidth} // No gaps for contiguous fit
             height={drawerHeight - 2} // Small gap on top
             depth={structure.internalDepth}
             position={[
@@ -101,7 +80,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
               (module.dimensions.depth - structure.internalDepth) / 2,
             ]}
             color="#8B4513" // Drawer color
-          />,
+          />
         );
         currentY += drawerHeight + 1; // Add drawer height and gap
       }
@@ -112,22 +91,20 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
       const elements = [];
 
       // Draw multiple shelves - tall cabinets have many shelves
-      structure.shelves.forEach((shelf, index) => {
+      structure.shelves.forEach((shelf) => {
         elements.push(
           <Shelf
-            key={`shelf-${index}`}
-            width={internalWidth - 2}
+            key={`shelf-${shelf.positionFromBottom}`}
+            width={internalWidth}
             depth={internalDepth - 1}
             position={[0, shelf.positionFromBottom, 0]}
             color="#D2691E" // Shelf color
-          />,
+          />
         );
       });
 
       // Draw animated doors - tall cabinets typically have 2 doors
-      const doorWidth = structure.doorCount === 1 
-        ? internalWidth - 2 
-        : (internalWidth - 4) / 2; // Account for center divider
+      const doorWidth = internalWidth;
       const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
       const doorDepth = 1.5;
 
@@ -156,7 +133,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
         elements.push(
           <DoubleDoor
             key="double-door"
-            width={doorWidth * 2 + 4} // Total width including divider
+            width={doorWidth}
             height={doorHeight}
             depth={doorDepth}
             position={[
@@ -177,7 +154,15 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
       // Add center divider for double door cabinets
       if (structure.doorCount === 2) {
         elements.push(
-          <Box key="divider" position={[0, module.dimensions.height / 2, 0]} args={[1, module.dimensions.height - carcassThickness * 2, internalDepth]}>
+          <Box
+            key="divider"
+            position={[0, module.dimensions.height / 2, 0]}
+            args={[
+              1,
+              module.dimensions.height - carcassThickness * 2,
+              internalDepth,
+            ]}
+          >
             <meshStandardMaterial color="#CCCCCC" />
           </Box>
         );
@@ -187,7 +172,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
     }
 
     return null;
-  }, [module, facadeMaterial]);
+  }, [module]);
 
   return (
     <group position={[module.position.x, module.position.y, module.position.z]}>

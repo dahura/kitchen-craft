@@ -8,26 +8,13 @@ import { AnimatedDoor, DoubleDoor } from "./animated-door";
 
 /**
  * Upper Cabinet Builder Component
- * 
+ *
  * Renders wall-mounted upper cabinets with doors and shelves.
  * Similar to BaseCabinet but optimized for upper cabinet proportions and positioning.
  */
 
 // Helper components for internal parts
-interface DoorProps {
-  width: number;
-  height: number;
-  depth: number;
-  position: [number, number, number];
-  color: string;
-}
-
 // Legacy Door component - replaced by AnimatedDoor
-// const Door = ({ width, height, depth, position, color }: DoorProps) => (
-//   <Box position={position} args={[width, height, depth]}>
-//     <meshStandardMaterial color={color} />
-//   </Box>
-// );
 
 interface ShelfProps {
   width: number;
@@ -47,15 +34,7 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
   // Create materials once for optimization
   const carcassMaterial = useMemo(
     () => <meshStandardMaterial color="#CCCCCC" />,
-    [],
-  );
-  const facadeMaterial = useMemo(
-    () => (
-      <meshStandardMaterial
-        color={module.materials.facade?.color || "lightblue"}
-      />
-    ),
-    [module.materials.facade?.color],
+    []
   );
 
   // Generate internal elements based on structure
@@ -73,22 +52,20 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
       const elements = [];
 
       // Draw shelves - upper cabinets typically have multiple shelves
-      structure.shelves.forEach((shelf, index) => {
+      structure.shelves.forEach((shelf) => {
         elements.push(
           <Shelf
-            key={`shelf-${index}`}
-            width={internalWidth - 2}
+            key={`shelf-${shelf.positionFromBottom}`}
+            width={internalWidth}
             depth={internalDepth - 1}
             position={[0, shelf.positionFromBottom, 0]}
             color="#D2691E" // Shelf color
-          />,
+          />
         );
       });
 
       // Draw animated doors - upper cabinets can have 1 or 2 doors
-      const doorWidth = structure.doorCount === 1 
-        ? internalWidth - 2 
-        : (internalWidth - 4) / 2; // Account for center divider
+      const doorWidth = internalWidth;
       const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
       const doorDepth = 1.5;
 
@@ -117,7 +94,7 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
         elements.push(
           <DoubleDoor
             key="double-door"
-            width={doorWidth * 2 + 4} // Total width including divider
+            width={doorWidth}
             height={doorHeight}
             depth={doorDepth}
             position={[
@@ -138,7 +115,15 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
       // Add center divider for double door cabinets
       if (structure.doorCount === 2) {
         elements.push(
-          <Box key="divider" position={[0, module.dimensions.height / 2, 0]} args={[1, module.dimensions.height - carcassThickness * 2, internalDepth]}>
+          <Box
+            key="divider"
+            position={[0, module.dimensions.height / 2, 0]}
+            args={[
+              1,
+              module.dimensions.height - carcassThickness * 2,
+              internalDepth,
+            ]}
+          >
             <meshStandardMaterial color="#CCCCCC" />
           </Box>
         );
@@ -148,7 +133,7 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
     }
 
     return null;
-  }, [module, facadeMaterial]);
+  }, [module]);
 
   return (
     <group position={[module.position.x, module.position.y, module.position.z]}>

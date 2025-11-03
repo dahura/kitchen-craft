@@ -5,16 +5,16 @@
 
 "use client";
 
-import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { Box } from '@react-three/drei';
-import * as THREE from 'three';
+import React, { useRef, useEffect, useState, useMemo } from "react";
+import { useFrame } from "@react-three/fiber";
+import { Box } from "@react-three/drei";
+import * as THREE from "three";
 import {
   DoorAnimationController,
   type DoorAnimationState,
   type DoorAnimationConfig,
   DEFAULT_DOOR_CONFIG,
-} from '../../../../../lib/animations';
+} from "../../../../../lib/animations";
 
 interface AnimatedDoorProps {
   width: number;
@@ -29,7 +29,7 @@ interface AnimatedDoorProps {
 
 /**
  * AnimatedDoor component with cube-based pivot mechanism
- * 
+ *
  * The door rotates around a pivot point (cube) positioned at the hinge.
  * The cube acts as the rotation axis and provides visual feedback.
  */
@@ -38,7 +38,7 @@ export const AnimatedDoor: React.FC<AnimatedDoorProps> = ({
   height,
   depth,
   position,
-  color = '#8B7355',
+  color = "#8B7355",
   config = {},
   onAnimationStateChange,
   onClick,
@@ -101,13 +101,13 @@ export const AnimatedDoor: React.FC<AnimatedDoorProps> = ({
   const handlePointerOver = (event: any) => {
     event.stopPropagation();
     setHovered(true);
-    document.body.style.cursor = 'pointer';
+    document.body.style.cursor = "pointer";
   };
 
   const handlePointerOut = (event: any) => {
     event.stopPropagation();
     setHovered(false);
-    document.body.style.cursor = 'auto';
+    document.body.style.cursor = "auto";
   };
 
   // Calculate pivot position (at the hinge, left side of door)
@@ -139,8 +139,8 @@ export const AnimatedDoor: React.FC<AnimatedDoorProps> = ({
         onClick={handleClick}
       >
         <meshStandardMaterial
-          color={animationState.isAnimating ? '#FFD700' : '#666666'}
-          emissive={hovered ? '#333333' : '#000000'}
+          color={animationState.isAnimating ? "#FFD700" : "#666666"}
+          emissive={hovered ? "#333333" : "#000000"}
           transparent
           opacity={0.8}
         />
@@ -212,7 +212,7 @@ export const useDoorAnimation = (config?: Partial<DoorAnimationConfig>) => {
 
   useEffect(() => {
     controllerRef.current = new DoorAnimationController(config, setState);
-    
+
     return () => {
       controllerRef.current?.dispose();
     };
@@ -249,7 +249,7 @@ export const DoubleDoor: React.FC<DoubleDoorProps> = ({
   height,
   depth,
   position,
-  color = '#8B7355',
+  color = "#8B7355",
   config = {},
   gap = 2,
 }) => {
@@ -262,17 +262,25 @@ export const DoubleDoor: React.FC<DoubleDoorProps> = ({
         width={doorWidth}
         height={height}
         depth={depth}
-        position={[position[0] - doorWidth / 2 - gap / 2, position[1], position[2]]}
+        position={[
+          position[0] - doorWidth / 2 - gap / 2,
+          position[1],
+          position[2],
+        ]}
         color={color}
         config={config}
       />
-      
+
       {/* Right door - opens in opposite direction */}
       <AnimatedDoor
         width={doorWidth}
         height={height}
         depth={depth}
-        position={[position[0] + doorWidth / 2 + gap / 2, position[1], position[2]]}
+        position={[
+          position[0] + doorWidth / 2 + gap / 2,
+          position[1],
+          position[2],
+        ]}
         color={color}
         config={{
           ...config,

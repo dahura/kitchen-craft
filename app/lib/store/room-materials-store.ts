@@ -9,32 +9,32 @@ interface RoomMaterialsStore {
   // --- СОСТОЯНИЕ (STATE) ---
   currentMaterials: RoomMaterials;
   isLoading: boolean;
-  
+
   // --- ЭКШЕНЫ (ACTIONS) ---
   // Обновление материала для конкретной поверхности
   updateSurfaceMaterial: (
     surface: "walls" | "floor" | "ceiling",
-    material: RoomSurfaceMaterial
+    material: RoomSurfaceMaterial,
   ) => void;
-  
+
   // Изменение типа материала (color <-> texture)
   changeMaterialType: (
     surface: "walls" | "floor" | "ceiling",
-    type: "color" | "texture"
+    type: "color" | "texture",
   ) => void;
-  
+
   // Установка цвета для поверхности
   setSurfaceColor: (
     surface: "walls" | "floor" | "ceiling",
-    color: string
+    color: string,
   ) => void;
-  
+
   // Установка текстуры для поверхности
   setSurfaceTexture: (
     surface: "walls" | "floor" | "ceiling",
-    textureId: string
+    textureId: string,
   ) => void;
-  
+
   // Обновление свойств материала (roughness, metalness, scale)
   updateMaterialProperties: (
     surface: "walls" | "floor" | "ceiling",
@@ -42,12 +42,12 @@ interface RoomMaterialsStore {
       roughness?: number;
       metalness?: number;
       scale?: number;
-    }
+    },
   ) => void;
-  
+
   // Сброс к значениям по умолчанию
   resetToDefaults: () => void;
-  
+
   // Применение предустановки
   applyPreset: (preset: RoomMaterials) => void;
 }
@@ -84,11 +84,9 @@ export const useRoomMaterialsStore = create<RoomMaterialsStore>()(
               ...currentMaterial,
               type,
               // При смене типа сохраняем разумные значения по умолчанию
-              value: type === "color" 
-                ? "#FFFFFF" 
-                : { diffuse: "" }, // Пустой набор текстур, будет заполнен позже
+              value: type === "color" ? "#FFFFFF" : { diffuse: "" }, // Пустой набор текстур, будет заполнен позже
             };
-            
+
             return {
               ...state,
               currentMaterials: {
@@ -184,10 +182,14 @@ export const useRoomMaterialsStore = create<RoomMaterialsStore>()(
 // Утилиты для работы с store
 export const useRoomMaterial = (surface: "walls" | "floor" | "ceiling") => {
   const materials = useRoomMaterialsStore((state) => state.currentMaterials);
-  const updateMaterial = useRoomMaterialsStore((state) => state.updateSurfaceMaterial);
+  const updateMaterial = useRoomMaterialsStore(
+    (state) => state.updateSurfaceMaterial,
+  );
   const setColor = useRoomMaterialsStore((state) => state.setSurfaceColor);
   const setTexture = useRoomMaterialsStore((state) => state.setSurfaceTexture);
-  const updateProperties = useRoomMaterialsStore((state) => state.updateMaterialProperties);
+  const updateProperties = useRoomMaterialsStore(
+    (state) => state.updateMaterialProperties,
+  );
 
   return {
     material: materials[surface],

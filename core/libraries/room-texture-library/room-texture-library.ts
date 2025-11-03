@@ -31,13 +31,13 @@ export const roomTextureLibrary: RoomTextureLibrary = {
 // Утилиты для работы с библиотекой
 export const getRoomTextureSet = (
   surface: "walls" | "floors" | "ceilings",
-  textureId: string
+  textureId: string,
 ) => {
   return roomTextureLibrary[surface]?.[textureId];
 };
 
 export const getAvailableRoomTextures = (
-  surface: "walls" | "floors" | "ceilings"
+  surface: "walls" | "floors" | "ceilings",
 ) => {
   return Object.keys(roomTextureLibrary[surface] || {});
 };
@@ -45,7 +45,7 @@ export const getAvailableRoomTextures = (
 // Проверка доступности текстуры
 export const isRoomTextureAvailable = (
   surface: "walls" | "floors" | "ceilings",
-  textureId: string
+  textureId: string,
 ) => {
   return !!roomTextureLibrary[surface]?.[textureId];
 };

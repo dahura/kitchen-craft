@@ -8,16 +8,16 @@ import { AnimatedDoor, DoubleDoor } from "./animated-door";
 
 /**
  * NOTE: This component uses the declarative @react-three/drei approach.
- * 
+ *
  * For an alternative implementation using the geometry-generator utilities,
  * see: geometry-based-cabinet.tsx
- * 
+ *
  * The geometry-generator provides:
  * - Framework-agnostic geometry generation
  * - Better performance for complex scenes
  * - More control over memory management
  * - Reusable geometry helpers
- * 
+ *
  * Example usage:
  * import { GeometryBasedCabinet } from './geometry-based-cabinet';
  * <GeometryBasedCabinet module={module} interactive={true} />
@@ -38,20 +38,7 @@ const Drawer = ({ width, height, depth, position, color }: DrawerProps) => (
   </Box>
 );
 
-interface DoorProps {
-  width: number;
-  height: number;
-  depth: number;
-  position: [number, number, number];
-  color: string;
-}
-
 // Legacy Door component - replaced by AnimatedDoor
-// const Door = ({ width, height, depth, position, color }: DoorProps) => (
-//   <Box position={position} args={[width, height, depth]}>
-//     <meshStandardMaterial color={color} />
-//   </Box>
-// );
 
 interface ShelfProps {
   width: number;
@@ -71,15 +58,7 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
   // Создаем материалы один раз для оптимизации
   const carcassMaterial = useMemo(
     () => <meshStandardMaterial color="#CCCCCC" />,
-    [],
-  );
-  const facadeMaterial = useMemo(
-    () => (
-      <meshStandardMaterial
-        color={module.materials.facade?.color || "lightblue"}
-      />
-    ),
-    [module.materials.facade?.color],
+    []
   );
 
   // Генерируем внутренние элементы на основе структуры
@@ -103,7 +82,7 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
         elements.push(
           <Drawer
             key={i}
-            width={internalWidth - 2} // Небольшой зазор по бокам
+            width={internalWidth} // No gaps for contiguous fit
             height={drawerHeight - 2} // Небольшой зазор сверху
             depth={structure.internalDepth}
             position={[
@@ -112,7 +91,7 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
               (module.dimensions.depth - structure.internalDepth) / 2,
             ]}
             color="#8B4513" // Цвет ящиков
-          />,
+          />
         );
         currentY += drawerHeight + 1; // Прибавляем высоту ящика и зазор
       }
@@ -127,15 +106,15 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
       elements.push(
         <Shelf
           key="shelf"
-          width={internalWidth - 2}
+          width={internalWidth}
           depth={internalDepth - 1}
           position={[0, shelfHeight, 0]}
           color="#D2691E" // Цвет полки
-        />,
+        />
       );
 
       // 2. Рисуем анимированную дверцу
-      const doorWidth = internalWidth - 2;
+      const doorWidth = internalWidth;
       const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
       const doorDepth = 1.5;
 
@@ -179,7 +158,7 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
     }
 
     return null;
-  }, [module, facadeMaterial]);
+  }, [module]);
 
   return (
     <group position={[module.position.x, module.position.y, module.position.z]}>
