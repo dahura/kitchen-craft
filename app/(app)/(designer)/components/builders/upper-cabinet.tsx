@@ -125,7 +125,7 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
             ]}
           >
             <meshStandardMaterial color="#CCCCCC" />
-          </Box>
+          </Box>,
         );
       }
 

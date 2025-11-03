@@ -164,7 +164,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
             ]}
           >
             <meshStandardMaterial color="#CCCCCC" />
-          </Box>
+          </Box>,
         );
       }
 
