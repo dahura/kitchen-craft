@@ -49,14 +49,23 @@ export function match<T, R = unknown>(value: T) {
 
 export const easeInOutCubic = (t: number): number =>
   match(t)
-    .when((t) => t < 0.5, (t) => 4 * t * t * t)
+    .when(
+      (t) => t < 0.5,
+      (t) => 4 * t * t * t,
+    )
     ._(() => 1 - Math.pow(-2 * t + 2, 3) / 2)
     .run() as number;
 
 export const easeOutElastic = (t: number): number =>
   match(t)
-    .when((t) => t === 0, () => 0)
-    .when((t) => t === 1, () => 1)
+    .when(
+      (t) => t === 0,
+      () => 0,
+    )
+    .when(
+      (t) => t === 1,
+      () => 1,
+    )
     ._(() => {
       const c4 = (2 * Math.PI) / 3;
       return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
@@ -65,9 +74,18 @@ export const easeOutElastic = (t: number): number =>
 
 export const easeOutBounce = (t: number): number => {
   return match(t)
-    .when((t) => t < 1 / 2.75, (t) => 7.5625 * t * t)
-    .when((t) => t < 2 / 2.75, (t) => 7.5625 * (t -= 1.5 / 2.75) * t + 0.75)
-    .when((t) => t < 2.5 / 2.75, (t) => 7.5625 * (t -= 2.25 / 2.75) * t + 0.9375)
+    .when(
+      (t) => t < 1 / 2.75,
+      (t) => 7.5625 * t * t,
+    )
+    .when(
+      (t) => t < 2 / 2.75,
+      (t) => 7.5625 * (t -= 1.5 / 2.75) * t + 0.75,
+    )
+    .when(
+      (t) => t < 2.5 / 2.75,
+      (t) => 7.5625 * (t -= 2.25 / 2.75) * t + 0.9375,
+    )
     ._((t) => 7.5625 * (t -= 2.625 / 2.75) * t + 0.984375)
     .run() as number;
 };
@@ -79,22 +97,22 @@ export const easeOutBounce = (t: number): number => {
 export function animate(
   duration: number,
   easingFunction: (t: number) => number,
-  callback: (progress: number) => void
+  callback: (progress: number) => void,
 ) {
   const start = performance.now();
-  
+
   function step(currentTime: number) {
     const elapsed = currentTime - start;
     const t = Math.min(elapsed / duration, 1); // Normalize time to [0, 1]
     const easedValue = easingFunction(t);
-    
+
     callback(easedValue);
-    
+
     if (t < 1) {
       requestAnimationFrame(step);
     }
   }
-  
+
   requestAnimationFrame(step);
 }
 
@@ -135,7 +153,7 @@ export class DoorAnimationController {
 
   constructor(
     config: Partial<DoorAnimationConfig> = {},
-    onStateChange?: (state: DoorAnimationState) => void
+    onStateChange?: (state: DoorAnimationState) => void,
   ) {
     this.config = { ...DEFAULT_DOOR_CONFIG, ...config };
     this.onStateChange = onStateChange;
@@ -186,7 +204,7 @@ export class DoorAnimationController {
 
     // Play opening sound if configured
     if (this.config.playSound && willBeOpen) {
-      this.playSound('open');
+      this.playSound("open");
     }
 
     animate(this.config.duration, this.config.easing, (progress) => {
@@ -203,7 +221,7 @@ export class DoorAnimationController {
 
         // Play closing sound if configured
         if (this.config.playSound && !willBeOpen) {
-          this.playSound('close');
+          this.playSound("close");
         }
 
         this.notifyStateChange();
@@ -211,10 +229,12 @@ export class DoorAnimationController {
     });
   }
 
-  private playSound(type: 'open' | 'close'): void {
+  private playSound(type: "open" | "close"): void {
     // Create a simple audio context for sound effects
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const audioContext = new (
+        window.AudioContext || (window as any).webkitAudioContext
+      )();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 
@@ -223,21 +243,24 @@ export class DoorAnimationController {
 
       // Different frequencies for open/close sounds
       oscillator.frequency.setValueAtTime(
-        type === 'open' ? 800 : 400,
-        audioContext.currentTime
+        type === "open" ? 800 : 400,
+        audioContext.currentTime,
       );
-      oscillator.type = 'sine';
+      oscillator.type = "sine";
 
       // Quick fade in/out
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+      gainNode.gain.linearRampToValueAtTime(
+        0.1,
+        audioContext.currentTime + 0.01,
+      );
       gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
 
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.1);
     } catch (error) {
       // Silently fail if audio context is not available
-      console.debug('Audio context not available for door sounds');
+      console.debug("Audio context not available for door sounds");
     }
   }
 

@@ -1,20 +1,20 @@
 /**
  * geometry-generator.ts
- * 
+ *
  * Framework-agnostic geometry generator that converts RenderableModule[] into Three.js meshes.
  * Provides reusable helpers for creating box, plane geometries with proper UV mapping.
- * 
+ *
  * Part of Kitchen-Kraft MVP - MVP-02: Geometry Generator Core
  */
 
-import * as THREE from 'three';
+import * as THREE from "three";
 import type {
   RenderableModule,
   MaterialDefinition,
   Dimensions,
   Position,
   Rotation,
-} from '../../../../../core/types';
+} from "../../../../../core/types";
 
 // ==================== GEOMETRY HELPERS ====================
 
@@ -30,15 +30,15 @@ export function createBoxGeometry(
   width: number,
   height: number,
   depth: number,
-  uvScale: { u: number; v: number } = { u: 1, v: 1 }
+  uvScale: { u: number; v: number } = { u: 1, v: 1 },
 ): THREE.BoxGeometry {
   const geometry = new THREE.BoxGeometry(width, height, depth);
-  
+
   // Apply UV scaling if needed
   if (uvScale.u !== 1 || uvScale.v !== 1) {
     applyUV(geometry, uvScale);
   }
-  
+
   return geometry;
 }
 
@@ -56,15 +56,20 @@ export function createPlaneGeometry(
   height: number,
   widthSegments: number = 1,
   heightSegments: number = 1,
-  uvScale: { u: number; v: number } = { u: 1, v: 1 }
+  uvScale: { u: number; v: number } = { u: 1, v: 1 },
 ): THREE.PlaneGeometry {
-  const geometry = new THREE.PlaneGeometry(width, height, widthSegments, heightSegments);
-  
+  const geometry = new THREE.PlaneGeometry(
+    width,
+    height,
+    widthSegments,
+    heightSegments,
+  );
+
   // Apply UV scaling if needed
   if (uvScale.u !== 1 || uvScale.v !== 1) {
     applyUV(geometry, uvScale);
   }
-  
+
   return geometry;
 }
 
@@ -75,22 +80,22 @@ export function createPlaneGeometry(
  */
 export function applyUV(
   geometry: THREE.BufferGeometry,
-  uvScale: { u: number; v: number }
+  uvScale: { u: number; v: number },
 ): void {
-  const uvAttribute = geometry.getAttribute('uv');
-  
+  const uvAttribute = geometry.getAttribute("uv");
+
   if (!uvAttribute) {
-    console.warn('Geometry does not have UV attribute');
+    console.warn("Geometry does not have UV attribute");
     return;
   }
-  
+
   const uvArray = uvAttribute.array as Float32Array;
-  
+
   for (let i = 0; i < uvArray.length; i += 2) {
-    uvArray[i] *= uvScale.u;       // Scale U coordinate
-    uvArray[i + 1] *= uvScale.v;   // Scale V coordinate
+    uvArray[i] *= uvScale.u; // Scale U coordinate
+    uvArray[i + 1] *= uvScale.v; // Scale V coordinate
   }
-  
+
   uvAttribute.needsUpdate = true;
 }
 
@@ -106,9 +111,14 @@ export function createCylinderGeometry(
   radiusTop: number,
   radiusBottom: number,
   height: number,
-  radialSegments: number = 16
+  radialSegments: number = 16,
 ): THREE.CylinderGeometry {
-  return new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments);
+  return new THREE.CylinderGeometry(
+    radiusTop,
+    radiusBottom,
+    height,
+    radialSegments,
+  );
 }
 
 // ==================== MATERIAL HELPERS ====================
@@ -121,30 +131,30 @@ export function createCylinderGeometry(
  */
 export function createMaterialFromDefinition(
   materialDef: MaterialDefinition,
-  textureLoader?: THREE.TextureLoader
+  textureLoader?: THREE.TextureLoader,
 ): THREE.Material {
   const loader = textureLoader || new THREE.TextureLoader();
-  
+
   // Default to MeshStandardMaterial for PBR workflow
   const materialParams: THREE.MeshStandardMaterialParameters = {
-    color: materialDef.color || '#ffffff',
+    color: materialDef.color || "#ffffff",
     roughness: materialDef.roughness ?? 0.5,
     metalness: materialDef.metalness ?? 0.0,
   };
-  
+
   // Load textures if specified
   if (materialDef.diffuseMap) {
     materialParams.map = loader.load(materialDef.diffuseMap);
   }
-  
+
   if (materialDef.normalMap) {
     materialParams.normalMap = loader.load(materialDef.normalMap);
   }
-  
+
   if (materialDef.roughnessMap) {
     materialParams.roughnessMap = loader.load(materialDef.roughnessMap);
   }
-  
+
   return new THREE.MeshStandardMaterial(materialParams);
 }
 
@@ -158,7 +168,7 @@ export function createMaterialFromDefinition(
 export function createColorMaterial(
   color: string,
   roughness: number = 0.5,
-  metalness: number = 0.0
+  metalness: number = 0.0,
 ): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({
     color,
@@ -201,56 +211,60 @@ export function generateCarcassGeometry(
   dimensions: Dimensions,
   thickness: number,
   backPanelThickness: number,
-  material: THREE.Material
+  material: THREE.Material,
 ): MeshData[] {
   const { width, height, depth } = dimensions;
   const meshes: MeshData[] = [];
-  
+
   // Left panel
   meshes.push({
     geometry: createBoxGeometry(thickness, height, depth),
     material,
     position: new THREE.Vector3(-width / 2 + thickness / 2, height / 2, 0),
     rotation: new THREE.Euler(0, 0, 0),
-    name: 'carcass-left',
+    name: "carcass-left",
   });
-  
+
   // Right panel
   meshes.push({
     geometry: createBoxGeometry(thickness, height, depth),
     material,
     position: new THREE.Vector3(width / 2 - thickness / 2, height / 2, 0),
     rotation: new THREE.Euler(0, 0, 0),
-    name: 'carcass-right',
+    name: "carcass-right",
   });
-  
+
   // Top panel
   meshes.push({
     geometry: createBoxGeometry(width - thickness * 2, thickness, depth),
     material,
     position: new THREE.Vector3(0, height - thickness / 2, 0),
     rotation: new THREE.Euler(0, 0, 0),
-    name: 'carcass-top',
+    name: "carcass-top",
   });
-  
+
   // Bottom panel
   meshes.push({
     geometry: createBoxGeometry(width - thickness * 2, thickness, depth),
     material,
     position: new THREE.Vector3(0, thickness / 2, 0),
     rotation: new THREE.Euler(0, 0, 0),
-    name: 'carcass-bottom',
+    name: "carcass-bottom",
   });
-  
+
   // Back panel
   meshes.push({
     geometry: createBoxGeometry(width, height, backPanelThickness),
     material,
-    position: new THREE.Vector3(0, height / 2, -depth / 2 + backPanelThickness / 2),
+    position: new THREE.Vector3(
+      0,
+      height / 2,
+      -depth / 2 + backPanelThickness / 2,
+    ),
     rotation: new THREE.Euler(0, 0, 0),
-    name: 'carcass-back',
+    name: "carcass-back",
   });
-  
+
   return meshes;
 }
 
@@ -268,14 +282,14 @@ export function generateDrawerGeometry(
   height: number,
   depth: number,
   position: THREE.Vector3,
-  material: THREE.Material
+  material: THREE.Material,
 ): MeshData {
   return {
     geometry: createBoxGeometry(width, height, depth),
     material,
     position,
     rotation: new THREE.Euler(0, 0, 0),
-    name: 'drawer',
+    name: "drawer",
   };
 }
 
@@ -293,14 +307,14 @@ export function generateDoorGeometry(
   height: number,
   depth: number,
   position: THREE.Vector3,
-  material: THREE.Material
+  material: THREE.Material,
 ): MeshData {
   return {
     geometry: createBoxGeometry(width, height, depth),
     material,
     position,
     rotation: new THREE.Euler(0, 0, 0),
-    name: 'door',
+    name: "door",
   };
 }
 
@@ -318,14 +332,14 @@ export function generateShelfGeometry(
   depth: number,
   thickness: number,
   position: THREE.Vector3,
-  material: THREE.Material
+  material: THREE.Material,
 ): MeshData {
   return {
     geometry: createBoxGeometry(width, thickness, depth),
     material,
     position,
     rotation: new THREE.Euler(0, 0, 0),
-    name: 'shelf',
+    name: "shelf",
   };
 }
 
@@ -337,108 +351,104 @@ export function generateShelfGeometry(
  */
 export function generateModuleGeometry(
   module: RenderableModule,
-  textureLoader?: THREE.TextureLoader
+  textureLoader?: THREE.TextureLoader,
 ): ModuleGeometryData {
   const meshes: MeshData[] = [];
-  
+
   // Create materials
   const carcassMaterial = module.materials.facade
     ? createMaterialFromDefinition(module.materials.facade, textureLoader)
-    : createColorMaterial('#CCCCCC', 0.6, 0.1);
-    
+    : createColorMaterial("#CCCCCC", 0.6, 0.1);
+
   const facadeMaterial = module.materials.facade
     ? createMaterialFromDefinition(module.materials.facade, textureLoader)
-    : createColorMaterial('#E0E0E0', 0.4, 0.0);
-    
-  const internalMaterial = createColorMaterial('#8B4513', 0.7, 0.0);
-  
+    : createColorMaterial("#E0E0E0", 0.4, 0.0);
+
+  const internalMaterial = createColorMaterial("#8B4513", 0.7, 0.0);
+
   // Generate carcass
   if (module.carcass) {
     const carcassGeometry = generateCarcassGeometry(
       module.dimensions,
       module.carcass.thickness,
       module.carcass.backPanelThickness || 0.5,
-      carcassMaterial
+      carcassMaterial,
     );
     meshes.push(...carcassGeometry);
   }
-  
+
   // Generate internal structure based on type
   if (module.structure) {
     const carcassThickness = module.carcass?.thickness || 1.8;
     const internalWidth = module.dimensions.width - carcassThickness * 2;
     const internalDepth = module.dimensions.depth - carcassThickness;
-    
-    if (module.structure.type === 'drawers') {
+
+    if (module.structure.type === "drawers") {
       let currentY = carcassThickness;
-      
+
       for (let i = 0; i < module.structure.count; i++) {
         const drawerHeight = module.structure.drawerHeights[i];
         const drawerPos = new THREE.Vector3(
           0,
           currentY + drawerHeight / 2,
-          (module.dimensions.depth - module.structure.internalDepth) / 2
+          (module.dimensions.depth - module.structure.internalDepth) / 2,
         );
-        
+
         meshes.push(
           generateDrawerGeometry(
-            internalWidth - 2,
+            internalWidth,
             drawerHeight - 2,
             module.structure.internalDepth,
             drawerPos,
-            internalMaterial
-          )
+            internalMaterial,
+          ),
         );
-        
+
         currentY += drawerHeight + 1;
       }
-    } else if (module.structure.type === 'door-and-shelf') {
+    } else if (module.structure.type === "door-and-shelf") {
       // Generate shelves
       for (const shelf of module.structure.shelves) {
-        const shelfPos = new THREE.Vector3(
-          0,
-          shelf.positionFromBottom,
-          0
-        );
-        
+        const shelfPos = new THREE.Vector3(0, shelf.positionFromBottom, 0);
+
         meshes.push(
           generateShelfGeometry(
-            internalWidth - 2,
+            internalWidth,
             internalDepth - 1,
             1,
             shelfPos,
-            internalMaterial
-          )
+            internalMaterial,
+          ),
         );
       }
-      
+
       // Generate door
-      const doorWidth = internalWidth - 2;
+      const doorWidth = internalWidth;
       const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
       const doorDepth = 1.5;
       const doorPos = new THREE.Vector3(
         0,
         carcassThickness + doorHeight / 2,
-        (module.dimensions.depth - doorDepth) / 2
+        (module.dimensions.depth - doorDepth) / 2,
       );
-      
+
       meshes.push(
         generateDoorGeometry(
           doorWidth,
           doorHeight,
           doorDepth,
           doorPos,
-          facadeMaterial
-        )
+          facadeMaterial,
+        ),
       );
     }
   }
-  
+
   // Process children recursively
   const childGeometry: ModuleGeometryData[] = module.children.map((child) =>
-    generateModuleGeometry(child, textureLoader)
+    generateModuleGeometry(child, textureLoader),
   );
-  
+
   return {
     id: module.id,
     type: module.type,
@@ -457,7 +467,7 @@ export function generateModuleGeometry(
 export function createMeshesFromGeometryData(
   geometryData: ModuleGeometryData,
   position: Position,
-  rotation: Rotation
+  rotation: Rotation,
 ): THREE.Group {
   const group = new THREE.Group();
   group.name = `module-${geometryData.id}`;
@@ -465,9 +475,9 @@ export function createMeshesFromGeometryData(
   group.rotation.set(
     THREE.MathUtils.degToRad(rotation.x),
     THREE.MathUtils.degToRad(rotation.y),
-    THREE.MathUtils.degToRad(rotation.z)
+    THREE.MathUtils.degToRad(rotation.z),
   );
-  
+
   // Create main meshes
   for (const meshData of geometryData.mainMeshes) {
     const mesh = new THREE.Mesh(meshData.geometry, meshData.material);
@@ -476,20 +486,20 @@ export function createMeshesFromGeometryData(
     mesh.rotation.copy(meshData.rotation);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
-    
+
     group.add(mesh);
   }
-  
+
   // Create child meshes recursively
   for (const childData of geometryData.childMeshes) {
     const childGroup = createMeshesFromGeometryData(
       childData,
       { x: 0, y: 0, z: 0 }, // Children positions are relative
-      { x: 0, y: 0, z: 0 }
+      { x: 0, y: 0, z: 0 },
     );
     group.add(childGroup);
   }
-  
+
   return group;
 }
 
@@ -501,21 +511,21 @@ export function createMeshesFromGeometryData(
  */
 export function generateScene(
   modules: RenderableModule[],
-  textureLoader?: THREE.TextureLoader
+  textureLoader?: THREE.TextureLoader,
 ): THREE.Group {
   const scene = new THREE.Group();
-  scene.name = 'kitchen-scene';
-  
+  scene.name = "kitchen-scene";
+
   for (const module of modules) {
     const geometryData = generateModuleGeometry(module, textureLoader);
     const moduleGroup = createMeshesFromGeometryData(
       geometryData,
       module.position,
-      module.rotation
+      module.rotation,
     );
     scene.add(moduleGroup);
   }
-  
+
   return scene;
 }
 
@@ -531,7 +541,7 @@ export function disposeGeometry(group: THREE.Group): void {
       if (object.geometry) {
         object.geometry.dispose();
       }
-      
+
       if (object.material) {
         if (Array.isArray(object.material)) {
           object.material.forEach((material) => disposeMaterial(material));

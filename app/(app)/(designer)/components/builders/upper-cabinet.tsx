@@ -8,7 +8,7 @@ import { AnimatedDoor, DoubleDoor } from "./animated-door";
 
 /**
  * Upper Cabinet Builder Component
- * 
+ *
  * Renders wall-mounted upper cabinets with doors and shelves.
  * Similar to BaseCabinet but optimized for upper cabinet proportions and positioning.
  */
@@ -77,7 +77,7 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
         elements.push(
           <Shelf
             key={`shelf-${index}`}
-            width={internalWidth - 2}
+            width={internalWidth}
             depth={internalDepth - 1}
             position={[0, shelf.positionFromBottom, 0]}
             color="#D2691E" // Shelf color
@@ -85,15 +85,20 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
         );
       });
 
-      // Draw animated doors - upper cabinets can have 1 or 2 doors
-      const doorWidth = structure.doorCount === 1 
-        ? internalWidth - 2 
-        : (internalWidth - 4) / 2; // Account for center divider
+      // Draw doors - upper cabinets can have 1 or 2 doors
+      const doorWidth =
+        structure.doorCount === 1 ? internalWidth : internalWidth / 2; // No gaps between doors
       const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
       const doorDepth = 1.5;
 
-      if (structure.doorCount === 1) {
-        // Single door
+      for (let i = 0; i < structure.doorCount; i++) {
+        const doorX =
+          structure.doorCount === 1
+            ? 0
+            : i === 0
+              ? -doorWidth / 2
+              : doorWidth / 2;
+
         elements.push(
           <AnimatedDoor
             key="single-door"
@@ -138,9 +143,17 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
       // Add center divider for double door cabinets
       if (structure.doorCount === 2) {
         elements.push(
-          <Box key="divider" position={[0, module.dimensions.height / 2, 0]} args={[1, module.dimensions.height - carcassThickness * 2, internalDepth]}>
+          <Box
+            key="divider"
+            position={[0, module.dimensions.height / 2, 0]}
+            args={[
+              1,
+              module.dimensions.height - carcassThickness * 2,
+              internalDepth,
+            ]}
+          >
             <meshStandardMaterial color="#CCCCCC" />
-          </Box>
+          </Box>,
         );
       }
 

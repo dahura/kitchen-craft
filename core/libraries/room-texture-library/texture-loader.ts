@@ -45,7 +45,7 @@ export const loadTexture = (url: string): Promise<THREE.Texture> => {
         (error) => {
           console.error(`Failed to load EXR texture: ${url}`, error);
           reject(error);
-        }
+        },
       );
     } else {
       // Загружаем обычную текстуру (JPG, PNG и т.д.)
@@ -65,7 +65,7 @@ export const loadTexture = (url: string): Promise<THREE.Texture> => {
         (error) => {
           console.error(`Failed to load texture: ${url}`, error);
           reject(error);
-        }
+        },
       );
     }
   });
@@ -76,7 +76,7 @@ export const loadTexture = (url: string): Promise<THREE.Texture> => {
  */
 export const loadTextureSet = async (
   textureSet: RoomTextureSet,
-  basePath: string = ""
+  basePath: string = "",
 ): Promise<THREE.MeshStandardMaterial> => {
   console.log("Loading texture set:", { textureSet, basePath });
 
@@ -136,7 +136,7 @@ export const loadTextureSet = async (
 export const createColorMaterial = (
   color: string,
   roughness: number = 0.8,
-  metalness: number = 0.0
+  metalness: number = 0.0,
 ): THREE.MeshStandardMaterial => {
   return new THREE.MeshStandardMaterial({
     color: new THREE.Color(color),
@@ -161,7 +161,7 @@ export const clearTextureCache = (): void => {
  */
 export const preloadTextures = async (
   textureSets: RoomTextureSet[],
-  basePath: string = ""
+  basePath: string = "",
 ): Promise<void> => {
   const loadPromises: Promise<void>[] = [];
 
@@ -171,7 +171,7 @@ export const preloadTextures = async (
         loadPromises.push(
           loadTexture(basePath + textureUrl).then(() => {
             // Текстура загружена и закеширована
-          })
+          }),
         );
       }
     });
