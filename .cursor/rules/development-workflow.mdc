@@ -13,6 +13,7 @@ Use this checklist whenever you (or the AI) **start working on a new Linear task
 git switch main
 git pull --ff-only
 ```
+// Memory: Always start with clean main branch to avoid conflicts
 
 ## 2. Create feature branch
 Branch name pattern:
@@ -25,6 +26,8 @@ feature/KIT-42-fix-validation-crash
 feature/KIT-128-room-texture-refactor
 ```
 
+// Memory: Branch naming convention helps track issues and maintain clean git history
+
 **After creating branch:** Update Linear issue status to `In Progress` and add comment:
 ```typescript
 mcp_Linear_update_issue({
@@ -36,19 +39,26 @@ mcp_Linear_create_comment({
   body: `[${new Date().toISOString().split('T')[0]}] Started: Created feature branch, analyzing requirements`
 });
 ```
+// Memory: Linear status updates keep team informed of progress
 
 ## 3. Study the task
 • Read description, comments, acceptance criteria.  
 • Open related files in IDE.  
 • Draft a todo list (_Cursor `todo_write`_).
 
+// Memory: Understanding requirements upfront prevents rework
+
 ## 4. Implement changes
 • Make **small, incremental commits** (scope = one logical change).  
 • **Stage only files touched for this task**: `git add <paths>`.
 
+// Memory: Small commits make code review easier and debugging simpler
+
 ## 5. Pause & write local test guide
 Before asking for user review, post a message:
 > _"Изменения готовы к локальному тесту. Запустите `bun dev` и перейдите на http://localhost:3000. Особое внимание: …"_
+
+// Memory: Clear testing instructions help validate changes efficiently
 
 Wait for user confirmation/feedback.
 
@@ -57,12 +67,15 @@ Wait for user confirmation/feedback.
 git commit -m "KIT-<IssueNumber>: <concise summary>"
 git push --set-upstream origin $(git branch --show-current)
 ```
+// Memory: Commit messages should reference the issue for traceability
 
 ## 7. Open PR via `gh`
 Run:
 ```bash
 gh pr create --base main --fill
 ```
+
+// Memory: PRs enable code review and discussion before merging
 
 **After creating PR:** Update Linear issue status to `In Review` and add comment with PR link:
 ```typescript
@@ -110,6 +123,8 @@ Example:
 [2025-11-02] Implemented fix + unit tests, awaiting review
 ```
 
+// Memory: Comments serve as a chronological record of work done
+
 When resuming, **always read latest Linear comments** and continue.
 
 ## 9. After PR Merge (if applicable)
@@ -125,4 +140,37 @@ mcp_Linear_create_comment({
 });
 ```
 
-**Note:** If user confirms fix works before PR merge, you may update status to `In Review` earlier. Always verify correct status names using `mcp_Linear_list_issue_statuses({ team: "Kitchen-kraft" })`.
+// Memory: Final status update closes the loop and marks completion
+
+**Note:** If user confirms fix works before PR merge, you may update status to `In Review` earlier. Always verify correct status names using `mcp_Linear_list_issue_statuses({ team: "Kitchen-kraft" }).
+
+## 10. Memory Bank Guidelines
+
+### Comment Format for Memory
+All comments should follow this pattern to serve as effective memory:
+```
+// Memory: <clear, concise explanation of why this step is important>
+```
+
+### What to Document
+1. **Decision points**: Why a particular approach was chosen
+2. **Workarounds**: Temporary solutions and why they were needed
+3. **Dependencies**: What other code/components this change affects
+4. **Future considerations**: What might need to be updated later
+5. **Testing notes**: Special cases or conditions to verify
+
+### Example Memory Comments
+```typescript
+// Memory: Using setTimeout instead of setInterval to prevent memory leaks
+// Memory: This is a temporary fix until the tall cabinet component is redesigned
+// Memory: Must update material-library.ts if adding new material types
+// Memory: This component depends on the room-boundary-calculator for positioning
+```
+
+### When Resuming Work
+1. Read all Linear comments for the issue
+2. Check recent commits in the feature branch
+3. Review any TODO items left in the code
+4. Look for Memory comments explaining previous decisions
+
+This approach ensures continuity of work and prevents repeating mistakes or losing context.

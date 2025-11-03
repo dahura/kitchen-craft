@@ -1,0 +1,125 @@
+---
+alwaysApply: false
+description: Guidelines for using comments as memory banks to track progress, decisions, and future work
+---
+# Memory Bank Guidelines
+
+This rule provides guidelines for using comments as memory banks to remember what has been done and what needs to be done. Memory banks help maintain context across sessions and team members.
+
+## Purpose
+
+Memory banks serve as:
+1. **Historical record** of decisions and their rationale
+2. **Context preservation** when switching between tasks
+3. **Knowledge transfer** between team members
+4. **Future reference** for similar problems
+
+## Comment Formats
+
+### Code Comments
+Use this format in code files:
+```typescript
+// Memory: <clear, concise explanation of why this code exists>
+```
+
+Examples:
+```typescript
+// Memory: Using setTimeout instead of setInterval to prevent memory leaks
+// Memory: This is a temporary fix until the tall cabinet component is redesigned
+// Memory: Must update material-library.ts if adding new material types
+// Memory: This component depends on room-boundary-calculator for positioning
+```
+
+### Linear Comments
+Use this format in Linear issues:
+```
+[YYYY-MM-DD] <verb>: <concise description of action or decision>
+```
+
+Examples:
+```
+[2025-11-03] Started: Created feature branch, analyzing requirements
+[2025-11-03] Analyzed: Identified that tall cabinet rendering needs temporary removal
+[2025-11-03] Implemented: Removed tall cabinet case from switch statement in tree-canvas.tsx
+[2025-11-03] Tested: Verified tall cabinets no longer render in 3D scene
+[2025-11-03] Ready for review: PR #9 created - https://github.com/dahura/kitchen-craft/pull/9
+```
+
+## What to Document
+
+### Decision Points
+Document why a particular approach was chosen over alternatives:
+```typescript
+// Memory: Chose React.memo instead of useMemo because component props are stable
+// Memory: Using CSS Grid instead of Flexbox for better responsive behavior
+```
+
+### Workarounds
+Document temporary solutions and why they were needed:
+```typescript
+// Memory: Hardcoded value until API endpoint is available
+// Memory: Using polyfill until browser support improves
+```
+
+### Dependencies
+Document what other code/components this change affects:
+```typescript
+// Memory: This change requires updating validation-engine.ts
+// Memory: Breaking change: update all consumers of this interface
+```
+
+### Future Considerations
+Document what might need to be updated later:
+```typescript
+// Memory: TODO: Refactor when TypeScript 5.0 is available
+// Memory: Consider replacing with WebAssembly for performance
+```
+
+### Testing Notes
+Document special cases or conditions to verify:
+```typescript
+// Memory: Test with empty arrays and null values
+// Memory: Verify behavior with large datasets (>1000 items)
+```
+
+## When to Add Memory Comments
+
+1. **When making non-obvious decisions**
+2. **When implementing temporary solutions**
+3. **When creating dependencies between components**
+4. **When deviating from standard patterns**
+5. **When leaving work for future sessions**
+
+## When Resuming Work
+
+1. Read all Linear comments for the issue
+2. Check recent commits in the feature branch
+3. Review any TODO items left in the code
+4. Look for Memory comments explaining previous decisions
+
+## Best Practices
+
+1. **Be concise but complete** - Include enough context to understand without being verbose
+2. **Use consistent format** - Follow the patterns above for easy parsing
+3. **Update when changing** - Modify memory comments when approaches change
+4. **Reference related code** - Include file names or component names when relevant
+5. **Include dates in Linear** - Always use YYYY-MM-DD format for chronological sorting
+
+## Example Workflow
+
+```typescript
+// Initial implementation
+function calculateLayout(modules) {
+  // Memory: Using simple algorithm for now, will optimize in KIT-42
+  return modules.map(/* ... */);
+}
+
+// Later update
+function calculateLayout(modules) {
+  // Memory: Optimized with spatial indexing (KIT-42 complete)
+  // Memory: Still O(n²) for edge cases, see KIT-45
+  return optimizedAlgorithm(modules);
+}
+```
+
+This approach ensures continuity of work and prevents repeating mistakes or losing context.

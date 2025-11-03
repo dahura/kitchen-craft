@@ -6,6 +6,8 @@ description: Auto-update Linear issue statuses when performing task operations (
 
 This rule guides the assistant to **automatically update Linear issue statuses** at key workflow milestones. Use this whenever working on Linear tasks (KIT-XXX).
 
+// Memory: Status updates keep team informed and provide project visibility
+
 ## Status Transition Rules
 
 ### 1. When Starting Work on an Issue
@@ -24,6 +26,7 @@ mcp_Linear_update_issue({
 ```
 [YYYY-MM-DD] Started: Created feature branch, analyzing requirements
 ```
+// Memory: Comments serve as chronological record of work progress
 
 ### 2. When Code is Ready for Review
 **Trigger:** After pushing commits and before/after creating PR
@@ -41,6 +44,7 @@ mcp_Linear_update_issue({
 ```
 [YYYY-MM-DD] Ready for review: PR #XXX created
 ```
+// Memory: PR links in comments make it easy to find related code changes
 
 ### 3. When PR is Merged
 **Trigger:** PR is merged to main
@@ -58,10 +62,12 @@ mcp_Linear_update_issue({
 ```
 [YYYY-MM-DD] Completed: PR merged, issue resolved
 ```
+// Memory: Final comments close the loop and mark completion
 
 ### 4. When User Confirms Fix is Working
 **Trigger:** User confirms local testing passed or fix is working
 **Action:** If PR not yet created, can optionally move to `In Review`. If PR exists, wait for merge.
+// Memory: User confirmation is valuable feedback that should be documented
 
 ### 5. When Blocked or Paused
 **Trigger:** Work paused or blocked (waiting for user, external dependency)
@@ -74,6 +80,7 @@ mcp_Linear_update_issue({
 });
 // + comment explaining pause
 ```
+// Memory: Blockage documentation helps identify recurring issues
 
 ### 6. When Reopening or Resuming
 **Trigger:** Resuming work on a closed/completed issue
@@ -85,6 +92,7 @@ mcp_Linear_update_issue({
   state: "In Progress"
 });
 ```
+// Memory: Reopening issues should be tracked to understand why initial fix was insufficient
 
 ## Status Mapping
 
@@ -94,6 +102,8 @@ Common Linear statuses (verify with team):
 - `In Progress` → Actively working
 - `In Review` → PR created, awaiting review
 - `Done` / `Completed` → Merged/closed
+
+// Memory: Status names may vary by team, always verify before using
 
 **Note:** Exact status names may vary by team. Use `mcp_Linear_list_issue_statuses({ team: "Kitchen-kraft" })` to get accurate status names.
 
@@ -120,3 +130,35 @@ When working on any Linear task (KIT-XXX):
 - If status update fails, log warning but continue workflow
 - If status name not found, use `mcp_Linear_list_issue_statuses` to get correct names
 - Always verify issue ID before updating
+
+## Memory Bank Guidelines for Linear Comments
+
+### Comment Format
+All Linear comments should follow this pattern to serve as effective memory:
+```
+[YYYY-MM-DD] <verb>: <concise description of action or decision>
+```
+
+### What to Document in Comments
+1. **Decision points**: Why a particular approach was chosen
+2. **Workarounds**: Temporary solutions and why they were needed
+3. **Dependencies**: What other code/components this change affects
+4. **Blockers**: What prevented progress and how it was resolved
+5. **Testing notes**: Special cases or conditions to verify
+
+### Example Memory Comments
+```
+[2025-11-03] Started: Created feature branch, analyzing requirements
+[2025-11-03] Analyzed: Identified that tall cabinet rendering needs temporary removal
+[2025-11-03] Implemented: Removed tall cabinet case from switch statement in tree-canvas.tsx
+[2025-11-03] Tested: Verified tall cabinets no longer render in 3D scene
+[2025-11-03] Ready for review: PR #9 created - https://github.com/dahura/kitchen-craft/pull/9
+```
+
+### When Resuming Work
+1. Read all Linear comments for the issue
+2. Check recent commits in the feature branch
+3. Review any TODO items left in the code
+4. Look for Memory comments explaining previous decisions
+
+This approach ensures continuity of work and prevents repeating mistakes or losing context.
