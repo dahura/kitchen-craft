@@ -15,6 +15,7 @@ import type {
   Position,
   Rotation,
 } from "../../../../../core/types";
+import { FACADE_GAP } from "./constants";
 
 // ==================== GEOMETRY HELPERS ====================
 
@@ -384,27 +385,43 @@ export function generateModuleGeometry(
     const internalDepth = module.dimensions.depth - carcassThickness;
 
     if (module.structure.type === "drawers") {
+      const availableHeight = module.dimensions.height - carcassThickness * 2;
+      const totalDrawerHeight = module.structure.drawerHeights.reduce((sum, h) => sum + h, 0);
+      const totalGapHeight = FACADE_GAP * (module.structure.count - 1); // Зазоры только между ящиками
+      const scaleFactor = (availableHeight - totalGapHeight) / totalDrawerHeight;
+
       let currentY = carcassThickness;
 
       for (let i = 0; i < module.structure.count; i++) {
-        const drawerHeight = module.structure.drawerHeights[i];
+        const scaledDrawerHeight = module.structure.drawerHeights[i] * scaleFactor;
+        const isLastDrawer = i === module.structure.count - 1;
+        // У последнего ящика нет зазора сверху, у остальных - есть
+        const actualDrawerHeight = isLastDrawer 
+          ? scaledDrawerHeight 
+          : scaledDrawerHeight - FACADE_GAP;
+
         const drawerPos = new THREE.Vector3(
           0,
-          currentY + drawerHeight / 2,
+          currentY + actualDrawerHeight / 2,
           (module.dimensions.depth - module.structure.internalDepth) / 2,
         );
 
         meshes.push(
           generateDrawerGeometry(
             internalWidth,
-            drawerHeight - 2,
+            actualDrawerHeight,
             module.structure.internalDepth,
             drawerPos,
             internalMaterial,
           ),
         );
 
-        currentY += drawerHeight + 1;
+        // Добавляем масштабированную высоту ящика (для промежуточных - зазор учтен в actualDrawerHeight)
+        currentY += scaledDrawerHeight;
+        // Добавляем зазор после ящика (кроме последнего)
+        if (!isLastDrawer) {
+          currentY += FACADE_GAP;
+        }
       }
     } else if (module.structure.type === "door-and-shelf") {
       // Generate shelves
@@ -424,7 +441,7 @@ export function generateModuleGeometry(
 
       // Generate door
       const doorWidth = internalWidth;
-      const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
+      const doorHeight = module.dimensions.height - carcassThickness * 2 - FACADE_GAP * 2;
       const doorDepth = 1.5;
       const doorPos = new THREE.Vector3(
         0,

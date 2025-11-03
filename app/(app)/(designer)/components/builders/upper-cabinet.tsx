@@ -5,6 +5,7 @@ import type { RenderableModule } from "../../../../../core/types";
 import { useMemo } from "react";
 import { Carcass } from "./carcass";
 import { AnimatedDoor, DoubleDoor } from "./animated-door";
+import { FACADE_GAP } from "./constants";
 
 /**
  * Upper Cabinet Builder Component
@@ -66,7 +67,7 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
 
       // Draw animated doors - upper cabinets can have 1 or 2 doors
       const doorWidth = internalWidth;
-      const doorHeight = module.dimensions.height - carcassThickness * 2 - 2;
+      const doorHeight = module.dimensions.height - carcassThickness * 2 - FACADE_GAP * 2;
       const doorDepth = 1.5;
 
       if (structure.doorCount === 1) {
@@ -103,7 +104,7 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
               (module.dimensions.depth - doorDepth) / 2,
             ]}
             color={module.materials.facade?.color || "#8B7355"}
-            gap={4} // Gap for center divider
+            gap={0} // No gap - modern kitchen style
             config={{
               openAngle: Math.PI / 3, // Upper cabinets open less
               duration: 600,
