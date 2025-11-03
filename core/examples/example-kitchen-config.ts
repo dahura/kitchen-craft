@@ -20,7 +20,7 @@ export const exampleKitchenConfig: KitchenConfig = {
       plinthHeight: 12,
       plinthDepth: 50,
     },
-    rules: { mismatchPolicy: "auto_fix", gapBetweenModules: 2 },
+    rules: { mismatchPolicy: "auto_fix", gapBetweenModules: 0 },
   },
   globalConstraints: {
     modules: { minWidth: 30, maxWidth: 120 },
