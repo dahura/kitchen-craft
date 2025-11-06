@@ -12,10 +12,14 @@ This rule guides the assistant to **automatically update Linear issue statuses**
 
 ### 1. When Starting Work on an Issue
 **Trigger:** Creating a feature branch for a Linear issue
+**Prerequisites:** 
+- **MANDATORY:** Switch to `main` and pull latest changes first
+- Then create feature branch
+
 **Action:** Update issue status to `In Progress`
 
 ```typescript
-// After creating branch: feature/KIT-XX-...
+// After: git switch main && git pull --ff-only && git checkout -b feature/KIT-XX-...
 mcp_Linear_update_issue({
   id: "KIT-XX",
   state: "In Progress"
@@ -29,11 +33,13 @@ mcp_Linear_update_issue({
 // Memory: Comments serve as chronological record of work progress
 
 ### 2. When Code is Ready for Review
-**Trigger:** After pushing commits and before/after creating PR
-**Action:** Update issue status to `In Review`
+**Trigger:** After pushing first commit to feature branch
+**Action:** 
+1. **MANDATORY:** Create Pull Request to `main` immediately
+2. Update issue status to `In Review`
 
 ```typescript
-// After: git push && gh pr create
+// After: git push && gh pr create --base main --fill
 mcp_Linear_update_issue({
   id: "KIT-XX",
   state: "In Review"
@@ -126,8 +132,10 @@ Common Linear statuses (verify with team):
 
 When working on any Linear task (KIT-XXX):
 
+- [ ] **Step 1 (Sync main):** **MANDATORY** - Switch to `main` and pull latest changes
 - [ ] **Step 2 (Create branch):** Update to `In Progress` + comment
-- [ ] **Step 7 (Create PR):** Update to `In Review` + comment with PR link
+- [ ] **Step 6 (Push):** Commit and push changes
+- [ ] **Step 7 (Create PR):** **MANDATORY** - Create PR immediately after first push → Update to `In Review` + comment with PR link
 - [ ] **After merge:** Update to `Done` + final comment
 - [ ] **If blocked:** Comment and optionally revert status
 - [ ] **Always:** Use issue ID from branch name or Linear URL
@@ -135,13 +143,17 @@ When working on any Linear task (KIT-XXX):
 ## Example Flow
 
 1. User: "Fix KIT-21"
-2. AI creates branch → Updates KIT-21 to `In Progress`
-3. AI implements fix → Commits code
-4. AI creates PR → Updates KIT-21 to `In Review`
-5. User confirms fix works → **Ensure code is pushed** → Keep `In Review` (not Done yet!)
-6. PR merged → Updates KIT-21 to `Done`
+2. **MANDATORY:** AI switches to `main` → `git pull --ff-only`
+3. AI creates branch → Updates KIT-21 to `In Progress`
+4. AI implements fix → Commits code → Pushes to remote
+5. **MANDATORY:** AI creates PR immediately → Updates KIT-21 to `In Review`
+6. User confirms fix works → **Ensure code is pushed** → Keep `In Review` (not Done yet!)
+7. PR merged → Updates KIT-21 to `Done`
 
-**Critical:** Never move to `Done` before code is pushed and PR is merged.
+**Critical Rules:**
+- **Always** sync `main` before creating a new branch
+- **Always** create PR immediately after first push to feature branch
+- **Never** move to `Done` before code is pushed and PR is merged
 
 ## Error Handling
 
