@@ -46,7 +46,27 @@ mcp_Linear_update_issue({
 ```
 // Memory: PR links in comments make it easy to find related code changes
 
-### 3. When PR is Merged
+### 3. When User Confirms Fix is Working
+**Trigger:** User confirms local testing passed or fix is working
+**Action:** 
+1. **First:** Commit and push changes (if not already done)
+2. **Then:** Update issue status based on PR state:
+   - If PR not yet created: Move to `In Review` after creating PR
+   - If PR exists: Keep `In Review` status (wait for merge)
+   - **Never move to `Done` before code is pushed**
+
+```typescript
+// After user confirms fix works:
+// 1. Ensure code is committed and pushed
+// 2. Then update status
+mcp_Linear_update_issue({
+  id: "KIT-XX",
+  state: "In Review"  // Not Done yet - wait for PR merge
+});
+```
+// Memory: User confirmation is valuable feedback, but code must be pushed before status update
+
+### 4. When PR is Merged
 **Trigger:** PR is merged to main
 **Action:** Update issue status to `Done` (or `Completed`)
 
@@ -62,12 +82,7 @@ mcp_Linear_update_issue({
 ```
 [YYYY-MM-DD] Completed: PR merged, issue resolved
 ```
-// Memory: Final comments close the loop and mark completion
-
-### 4. When User Confirms Fix is Working
-**Trigger:** User confirms local testing passed or fix is working
-**Action:** If PR not yet created, can optionally move to `In Review`. If PR exists, wait for merge.
-// Memory: User confirmation is valuable feedback that should be documented
+// Memory: Final comments close the loop and mark completion. Done status only after merge.
 
 ### 5. When Blocked or Paused
 **Trigger:** Work paused or blocked (waiting for user, external dependency)
@@ -123,7 +138,10 @@ When working on any Linear task (KIT-XXX):
 2. AI creates branch → Updates KIT-21 to `In Progress`
 3. AI implements fix → Commits code
 4. AI creates PR → Updates KIT-21 to `In Review`
-5. PR merged → Updates KIT-21 to `Done`
+5. User confirms fix works → **Ensure code is pushed** → Keep `In Review` (not Done yet!)
+6. PR merged → Updates KIT-21 to `Done`
+
+**Critical:** Never move to `Done` before code is pushed and PR is merged.
 
 ## Error Handling
 

@@ -5,6 +5,7 @@ import type { RenderableModule } from "../../../../../core/types";
 import { useMemo } from "react";
 import { Carcass } from "./carcass";
 import { AnimatedDoor, DoubleDoor } from "./animated-door";
+import { AnimatedDrawer } from "./animated-drawer";
 import { FACADE_GAP } from "./constants";
 
 /**
@@ -23,21 +24,6 @@ import { FACADE_GAP } from "./constants";
  * import { GeometryBasedCabinet } from './geometry-based-cabinet';
  * <GeometryBasedCabinet module={module} interactive={true} />
  */
-
-// Вспомогательные компоненты для отрисовки внутренних частей
-interface DrawerProps {
-  width: number;
-  height: number;
-  depth: number;
-  position: [number, number, number];
-  color: string;
-}
-
-const Drawer = ({ width, height, depth, position, color }: DrawerProps) => (
-  <Box position={position} args={[width, height, depth]}>
-    <meshStandardMaterial color={color} />
-  </Box>
-);
 
 // Legacy Door component - replaced by AnimatedDoor
 
@@ -96,7 +82,7 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
           : scaledDrawerHeight - FACADE_GAP;
 
         elements.push(
-          <Drawer
+          <AnimatedDrawer
             key={i}
             width={internalWidth}
             height={actualDrawerHeight}

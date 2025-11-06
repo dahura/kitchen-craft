@@ -127,7 +127,27 @@ Example:
 
 When resuming, **always read latest Linear comments** and continue.
 
-## 9. After PR Merge (if applicable)
+## 9. When User Confirms Fix Works
+**Important:** Before updating Linear status, ensure code is committed and pushed:
+1. **First:** Commit and push changes (if not already done)
+2. **Then:** Update Linear issue status:
+   - If PR not created yet: Create PR first, then update to `In Review`
+   - If PR exists: Update to `In Review` (if not already)
+   - **Never move to `Done` before code is pushed and PR is merged**
+
+```typescript
+// After user confirms fix works:
+// 1. Ensure: git commit && git push
+// 2. Then update status (not Done yet!)
+mcp_Linear_update_issue({
+  id: "KIT-XX",
+  state: "In Review"  // Not Done - wait for PR merge
+});
+```
+
+// Memory: Always push code before updating Linear status. Done only after PR merge.
+
+## 10. After PR Merge (if applicable)
 When PR is merged to main, update Linear issue status to `Done`:
 ```typescript
 mcp_Linear_update_issue({
@@ -140,11 +160,11 @@ mcp_Linear_create_comment({
 });
 ```
 
-// Memory: Final status update closes the loop and marks completion
+// Memory: Final status update closes the loop and marks completion. Done status only after PR merge.
 
-**Note:** If user confirms fix works before PR merge, you may update status to `In Review` earlier. Always verify correct status names using `mcp_Linear_list_issue_statuses({ team: "Kitchen-kraft" }).
+**Note:** Always verify correct status names using `mcp_Linear_list_issue_statuses({ team: "Kitchen-kraft" })`.
 
-## 10. Memory Bank Guidelines
+## 11. Memory Bank Guidelines
 
 ### Comment Format for Memory
 All comments should follow this pattern to serve as effective memory:
