@@ -80,16 +80,30 @@ export const easeOutBounce = (t: number): number => {
     )
     .when(
       (t) => t < 2 / 2.75,
-      (t) => 7.5625 * (t -= 1.5 / 2.75) * t + 0.75
+      (t) => {
+        // Original algorithm uses: 7.5625 * (t -= 1.5 / 2.75) * t + 0.75
+        // biome-ignore lint: matches original Svelte algorithm behavior
+        t -= 1.5 / 2.75;
+        return 7.5625 * t * t + 0.75;
+      }
     )
     .when(
       (t) => t < 2.5 / 2.75,
-      (t) => 7.5625 * (t -= 2.25 / 2.75) * t + 0.9375
+      (t) => {
+        // Original algorithm uses: 7.5625 * (t -= 2.25 / 2.75) * t + 0.9375
+        // biome-ignore lint: matches original Svelte algorithm behavior
+        t -= 2.25 / 2.75;
+        return 7.5625 * t * t + 0.9375;
+      }
     )
-    ._((t) => 7.5625 * (t -= 2.625 / 2.75) * t + 0.984375)
+    ._((t) => {
+      // Original algorithm uses: 7.5625 * (t -= 2.625 / 2.75) * t + 0.984375
+      // biome-ignore lint: matches original Svelte algorithm behavior
+      t -= 2.625 / 2.75;
+      return 7.5625 * t * t + 0.984375;
+    })
     .run() as number;
 };
-
 // ---------------------------------------------------------------------------
 // Animation Function
 // ---------------------------------------------------------------------------
@@ -136,10 +150,55 @@ export interface DoorAnimationConfig {
 
 export const DEFAULT_DOOR_CONFIG: DoorAnimationConfig = {
   openAngle: Math.PI / 2, // 90 degrees
-  duration: 800, // 800ms
+  duration: 1000, // 1000ms (as in Svelte example)
   easing: easeInOutCubic,
   playSound: true,
 };
+
+// ---------------------------------------------------------------------------
+// Sound System
+// ---------------------------------------------------------------------------
+
+class SoundManager {
+  private sounds: Map<string, HTMLAudioElement> = new Map();
+  private audioContext: AudioContext | null = null;
+
+  constructor() {
+    // Initialize audio context on first user interaction
+    if (typeof window !== "undefined") {
+      // Try to create audio context (may require user interaction)
+      try {
+        this.audioContext = new (window.AudioContext ||
+          // biome-ignore lint/suspicious/noExplicitAny: webkitAudioContext is not in types
+          (window as any).webkitAudioContext)();
+      } catch {
+        console.debug("Audio context not available");
+      }
+    }
+  }
+
+  loadSound(name: string, url: string): void {
+    if (typeof window === "undefined") return;
+
+    const audio = new Audio(url);
+    audio.preload = "auto";
+    this.sounds.set(name, audio);
+  }
+
+  playSound(name: string): void {
+    const audio = this.sounds.get(name);
+    if (audio) {
+      // Reset audio to start and play
+      audio.currentTime = 0;
+      audio.play().catch((error) => {
+        console.debug(`Failed to play sound ${name}:`, error);
+      });
+    }
+  }
+}
+
+// Global sound manager instance
+export const soundManager = new SoundManager();
 
 // ---------------------------------------------------------------------------
 // Door Animation Controller
@@ -194,6 +253,15 @@ export class DoorAnimationController {
     const startRotation = this.state.rotation;
     const rotationDelta = targetRotation - startRotation;
 
+    // Sound timing configuration
+    const ANIMATION_DURATION = this.config.duration;
+    const SOUND_DURATION = 100;
+    const SOUND_DELAY = 0;
+    const SOUND_START_OFFSET =
+      ANIMATION_DURATION - (SOUND_DURATION - SOUND_DELAY);
+
+    let soundPlayed = false;
+
     this.state = {
       ...this.state,
       isAnimating: true,
@@ -202,14 +270,25 @@ export class DoorAnimationController {
 
     this.notifyStateChange();
 
-    // Play opening sound if configured
+    // Play opening sound at start if configured
     if (this.config.playSound && willBeOpen) {
-      this.playSound("open");
+      soundManager.playSound("doorOpen");
     }
 
     animate(this.config.duration, this.config.easing, (progress) => {
       this.state.rotation = startRotation + rotationDelta * progress;
       this.notifyStateChange();
+
+      // Play closing sound slightly before animation ends
+      if (
+        this.config.playSound &&
+        !willBeOpen &&
+        !soundPlayed &&
+        progress >= SOUND_START_OFFSET / ANIMATION_DURATION
+      ) {
+        soundManager.playSound("doorClose");
+        soundPlayed = true;
+      }
 
       if (progress === 1) {
         this.state = {
@@ -219,48 +298,9 @@ export class DoorAnimationController {
           rotation: targetRotation,
         };
 
-        // Play closing sound if configured
-        if (this.config.playSound && !willBeOpen) {
-          this.playSound("close");
-        }
-
         this.notifyStateChange();
       }
     });
-  }
-
-  private playSound(type: "open" | "close"): void {
-    // Create a simple audio context for sound effects
-    try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      // Different frequencies for open/close sounds
-      oscillator.frequency.setValueAtTime(
-        type === "open" ? 800 : 400,
-        audioContext.currentTime
-      );
-      oscillator.type = "sine";
-
-      // Quick fade in/out
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(
-        0.1,
-        audioContext.currentTime + 0.01
-      );
-      gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.1);
-    } catch (error) {
-      // Silently fail if audio context is not available
-      console.debug("Audio context not available for door sounds");
-    }
   }
 
   private notifyStateChange(): void {
@@ -275,3 +315,238 @@ export class DoorAnimationController {
     }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Double Door Animation Controller (Left/Right)
+// ---------------------------------------------------------------------------
+
+export interface DoubleDoorAnimationState {
+  leftDoor: {
+    isOpen: boolean;
+    isAnimating: boolean;
+    rotation: number;
+  };
+  rightDoor: {
+    isOpen: boolean;
+    isAnimating: boolean;
+    rotation: number;
+  };
+}
+
+export interface DoubleDoorAnimationConfig extends DoorAnimationConfig {
+  // Inherits all door config options
+}
+
+export class DoubleDoorAnimationController {
+  private leftDoorRotation: number = 0;
+  private rightDoorRotation: number = 0;
+  private isLeftDoorOpen: boolean = false;
+  private isRightDoorOpen: boolean = false;
+  private config: DoubleDoorAnimationConfig;
+  private onStateChange?: (state: DoubleDoorAnimationState) => void;
+  private MAX_ROTATION: number;
+
+  constructor(
+    config: Partial<DoubleDoorAnimationConfig> = {},
+    onStateChange?: (state: DoubleDoorAnimationState) => void
+  ) {
+    this.config = { ...DEFAULT_DOOR_CONFIG, ...config };
+    this.onStateChange = onStateChange;
+    this.MAX_ROTATION = this.config.openAngle;
+  }
+
+  public getState(): DoubleDoorAnimationState {
+    return {
+      leftDoor: {
+        isOpen: this.isLeftDoorOpen,
+        isAnimating: false, // Tracked per animation
+        rotation: this.leftDoorRotation,
+      },
+      rightDoor: {
+        isOpen: this.isRightDoorOpen,
+        isAnimating: false, // Tracked per animation
+        rotation: this.rightDoorRotation,
+      },
+    };
+  }
+
+  public toggleLeft(): void {
+    this.toggle("left");
+  }
+
+  public toggleRight(): void {
+    this.toggle("right");
+  }
+
+  private toggle(door: "left" | "right"): void {
+    const ANIMATION_DURATION = this.config.duration;
+    const SOUND_DURATION = 100;
+    const SOUND_DELAY = 0;
+    const SOUND_START_OFFSET =
+      ANIMATION_DURATION - (SOUND_DURATION - SOUND_DELAY);
+
+    let soundPlayed = false;
+
+    if (door === "left") {
+      const isOpen = this.isLeftDoorOpen;
+
+      if (!isOpen) {
+        // Opening left door (rotates negative)
+        soundPlayed = false;
+        animate(ANIMATION_DURATION, this.config.easing, (progress) => {
+          this.leftDoorRotation = -progress * this.MAX_ROTATION;
+          this.notifyStateChange();
+
+          if (progress === 1) {
+            this.isLeftDoorOpen = true;
+            this.notifyStateChange();
+          }
+        });
+      } else {
+        // Closing left door
+        soundPlayed = false;
+        animate(ANIMATION_DURATION, this.config.easing, (progress) => {
+          this.leftDoorRotation = (1 - progress) * -this.MAX_ROTATION;
+          this.notifyStateChange();
+
+          // Play closing sound slightly before animation ends
+          if (
+            this.config.playSound &&
+            !soundPlayed &&
+            progress >= SOUND_START_OFFSET / ANIMATION_DURATION
+          ) {
+            soundManager.playSound("doorClose");
+            soundPlayed = true;
+          }
+
+          if (progress === 1) {
+            this.isLeftDoorOpen = false;
+            this.notifyStateChange();
+          }
+        });
+      }
+    } else if (door === "right") {
+      const isOpen = this.isRightDoorOpen;
+
+      if (!isOpen) {
+        // Opening right door (rotates positive)
+        soundPlayed = false;
+        animate(ANIMATION_DURATION, this.config.easing, (progress) => {
+          this.rightDoorRotation = progress * this.MAX_ROTATION;
+          this.notifyStateChange();
+
+          if (progress === 1) {
+            this.isRightDoorOpen = true;
+            this.notifyStateChange();
+          }
+        });
+      } else {
+        // Closing right door
+        soundPlayed = false;
+        animate(ANIMATION_DURATION, this.config.easing, (progress) => {
+          this.rightDoorRotation = (1 - progress) * this.MAX_ROTATION;
+          this.notifyStateChange();
+
+          // Play closing sound slightly before animation ends
+          if (
+            this.config.playSound &&
+            !soundPlayed &&
+            progress >= SOUND_START_OFFSET / ANIMATION_DURATION
+          ) {
+            soundManager.playSound("doorClose");
+            soundPlayed = true;
+          }
+
+          if (progress === 1) {
+            this.isRightDoorOpen = false;
+            this.notifyStateChange();
+          }
+        });
+      }
+    }
+  }
+
+  private notifyStateChange(): void {
+    if (this.onStateChange) {
+      this.onStateChange(this.getState());
+    }
+  }
+
+  public dispose(): void {
+    // Cleanup if needed
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Drawer Animation Types and Controller
+// ---------------------------------------------------------------------------
+
+export interface DrawerAnimationConfig {
+  duration: number; // Animation duration in milliseconds
+  easing: (t: number) => number; // Easing function
+  playSound?: boolean; // Whether to play sound effects
+}
+
+export const DEFAULT_DRAWER_CONFIG: DrawerAnimationConfig = {
+  duration: 1140, // As in Svelte example
+  easing: easeInOutCubic,
+  playSound: true,
+};
+
+export interface ToggleDrawerAnimationProps {
+  from: number;
+  to: number;
+  onUpdate: (position: number) => void;
+}
+
+export class DrawerAnimationController {
+  private config: DrawerAnimationConfig;
+  private drawerPosition: number = 0;
+
+  constructor(config: Partial<DrawerAnimationConfig> = {}) {
+    this.config = { ...DEFAULT_DRAWER_CONFIG, ...config };
+  }
+
+  public getPosition(): number {
+    return this.drawerPosition;
+  }
+
+  public toggleDrawer({
+    from,
+    to,
+    onUpdate,
+  }: ToggleDrawerAnimationProps): Promise<void> {
+    return new Promise((resolve) => {
+      const ANIMATION_DURATION = this.config.duration;
+      const SOUND_DURATION = 1140;
+      const SOUND_DELAY = 0;
+      const SOUND_START_OFFSET =
+        ANIMATION_DURATION - (SOUND_DURATION - SOUND_DELAY);
+
+      let soundPlayed = false;
+
+      animate(ANIMATION_DURATION, this.config.easing, (progress) => {
+        const currentPosition = from + (to - from) * progress;
+        this.drawerPosition = currentPosition;
+        onUpdate(currentPosition);
+
+        const isOpening = to > from;
+        if (
+          this.config.playSound &&
+          progress >= SOUND_START_OFFSET / ANIMATION_DURATION &&
+          !soundPlayed
+        ) {
+          soundManager.playSound(isOpening ? "drawerOpen" : "drawerClose");
+          soundPlayed = true;
+        }
+
+        if (progress === 1) {
+          resolve();
+        }
+      });
+    });
+  }
+}
+
+// Note: React hooks for these controllers should be created in component files
+// where React is available

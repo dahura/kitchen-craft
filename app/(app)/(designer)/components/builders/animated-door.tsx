@@ -11,8 +11,10 @@ import { Box } from "@react-three/drei";
 import * as THREE from "three";
 import {
   DoorAnimationController,
+  DoubleDoorAnimationController,
   type DoorAnimationState,
   type DoorAnimationConfig,
+  type DoubleDoorAnimationState,
   DEFAULT_DOOR_CONFIG,
 } from "../../../../../lib/animations";
 
@@ -46,40 +48,55 @@ export const AnimatedDoor: React.FC<AnimatedDoorProps> = ({
   const pivotGroupRef = useRef<THREE.Group>(null);
   const doorRef = useRef<THREE.Mesh>(null);
   const pivotCubeRef = useRef<THREE.Mesh>(null);
+  const controllerRef = useRef<DoorAnimationController | null>(null);
   const [hovered, setHovered] = useState(false);
 
-  // Create animation controller
-  const controller = useMemo(() => {
-    const mergedConfig = { ...DEFAULT_DOOR_CONFIG, ...config };
-    return new DoorAnimationController(mergedConfig, onAnimationStateChange);
-  }, [config, onAnimationStateChange]);
-
   // State for tracking animation
-  const [animationState, setAnimationState] = useState<DoorAnimationState>(
-    controller.getState()
+  const [animationState, setAnimationState] = useState<DoorAnimationState>({
+    isOpen: false,
+    isAnimating: false,
+    rotation: 0,
+    targetRotation: 0,
+  });
+
+  // Use ref to store current rotation for useFrame to access latest value
+  const rotationRef = useRef<number>(0);
+
+  // Memoize config to prevent unnecessary re-renders
+  // Compare config properties instead of the object itself
+  const mergedConfig = useMemo(
+    () => ({ ...DEFAULT_DOOR_CONFIG, ...config }),
+    [config.openAngle, config.duration, config.easing, config.playSound]
   );
 
-  // Update animation state when controller changes
+  // Create and set up animation controller
   useEffect(() => {
     const handleStateChange = (state: DoorAnimationState) => {
+      // Update ref immediately for useFrame to access latest value
+      rotationRef.current = state.rotation;
       setAnimationState(state);
     };
 
-    // Set up the controller callback
-    const newController = new DoorAnimationController(
-      { ...DEFAULT_DOOR_CONFIG, ...config },
+    // Create controller once with proper callback
+    controllerRef.current = new DoorAnimationController(
+      mergedConfig,
       handleStateChange
     );
 
+    // Don't call setState here - it's already initialized above
+    // The controller will notify via callback when state changes
+
     return () => {
-      newController.dispose();
+      controllerRef.current?.dispose();
     };
-  }, [config]);
+  }, [mergedConfig]);
 
   // Apply rotation from animation state
   useFrame(() => {
     if (pivotGroupRef.current) {
-      pivotGroupRef.current.rotation.y = animationState.rotation;
+      // Use ref to get latest rotation value immediately
+      // Invert rotation to open outward (like left door in double door system)
+      pivotGroupRef.current.rotation.y = -rotationRef.current;
     }
 
     // Add subtle hover effect to pivot cube
@@ -94,7 +111,8 @@ export const AnimatedDoor: React.FC<AnimatedDoorProps> = ({
 
   const handleClick = (event: any) => {
     event.stopPropagation();
-    controller.toggle();
+    // Toggle door animation on click
+    controllerRef.current?.toggle();
     onClick?.();
   };
 
@@ -233,6 +251,7 @@ export const useDoorAnimation = (config?: Partial<DoorAnimationConfig>) => {
 
 /**
  * Multiple doors component for cabinets with two doors
+ * Uses DoubleDoorAnimationController for synchronized left/right door control
  */
 interface DoubleDoorProps {
   width: number;
@@ -255,38 +274,173 @@ export const DoubleDoor: React.FC<DoubleDoorProps> = ({
 }) => {
   const doorWidth = (width - gap) / 2;
 
+  // Create double door controller
+  const controllerRef = useRef<DoubleDoorAnimationController | null>(null);
+  const leftPivotRef = useRef<THREE.Group>(null);
+  const rightPivotRef = useRef<THREE.Group>(null);
+
+  // Initialize with default state
+  const [doubleDoorState, setDoubleDoorState] =
+    useState<DoubleDoorAnimationState>({
+      leftDoor: {
+        isOpen: false,
+        isAnimating: false,
+        rotation: 0,
+      },
+      rightDoor: {
+        isOpen: false,
+        isAnimating: false,
+        rotation: 0,
+      },
+    });
+
+  // Use refs to store current rotations for useFrame to access latest values
+  const leftRotationRef = useRef<number>(0);
+  const rightRotationRef = useRef<number>(0);
+
+  // Memoize config to prevent unnecessary re-renders
+  // Compare config properties instead of the object itself
+  const mergedConfig = useMemo(
+    () => ({ ...DEFAULT_DOOR_CONFIG, ...config }),
+    [config.openAngle, config.duration, config.easing, config.playSound]
+  );
+
+  useEffect(() => {
+    const handleStateChange = (state: DoubleDoorAnimationState) => {
+      // Update refs immediately for useFrame to access latest values
+      leftRotationRef.current = state.leftDoor.rotation;
+      rightRotationRef.current = state.rightDoor.rotation;
+      setDoubleDoorState(state);
+    };
+
+    controllerRef.current = new DoubleDoorAnimationController(
+      mergedConfig,
+      handleStateChange
+    );
+
+    // Don't call setState here - it's already initialized above
+    // The controller will notify via callback when state changes
+
+    return () => {
+      controllerRef.current?.dispose();
+    };
+  }, [mergedConfig]);
+
+  // Update rotations from animation state
+  useFrame(() => {
+    if (leftPivotRef.current) {
+      // Use ref to get latest rotation value immediately
+      leftPivotRef.current.rotation.y = leftRotationRef.current;
+    }
+    if (rightPivotRef.current) {
+      // Use ref to get latest rotation value immediately
+      rightPivotRef.current.rotation.y = rightRotationRef.current;
+    }
+  });
+
+  const handleLeftDoorClick = (event: any) => {
+    event.stopPropagation();
+    controllerRef.current?.toggleLeft();
+  };
+
+  const handleRightDoorClick = (event: any) => {
+    event.stopPropagation();
+    controllerRef.current?.toggleRight();
+  };
+
+  // Calculate pivot positions (at hinges)
+  const leftDoorCenter = [
+    position[0] - doorWidth / 2 - gap / 2,
+    position[1],
+    position[2],
+  ] as [number, number, number];
+
+  const rightDoorCenter = [
+    position[0] + doorWidth / 2 + gap / 2,
+    position[1],
+    position[2],
+  ] as [number, number, number];
+
+  // Left door pivot is at left edge, right door pivot is at right edge
+  const leftPivotPosition: [number, number, number] = [
+    leftDoorCenter[0] - doorWidth / 2,
+    leftDoorCenter[1],
+    leftDoorCenter[2],
+  ];
+
+  const rightPivotPosition: [number, number, number] = [
+    rightDoorCenter[0] + doorWidth / 2,
+    rightDoorCenter[1],
+    rightDoorCenter[2],
+  ];
+
   return (
     <group>
       {/* Left door */}
-      <AnimatedDoor
-        width={doorWidth}
-        height={height}
-        depth={depth}
-        position={[
-          position[0] - doorWidth / 2 - gap / 2,
-          position[1],
-          position[2],
-        ]}
-        color={color}
-        config={config}
-      />
+      <group position={leftPivotPosition}>
+        <group ref={leftPivotRef}>
+          <Box
+            args={[doorWidth, height, depth]}
+            position={[doorWidth / 2, 0, 0]}
+            onClick={handleLeftDoorClick}
+            onPointerOver={(e) => {
+              e.stopPropagation();
+              document.body.style.cursor = "pointer";
+            }}
+            onPointerOut={(e) => {
+              e.stopPropagation();
+              document.body.style.cursor = "auto";
+            }}
+          >
+            <meshStandardMaterial color={color} />
+          </Box>
+          {/* Door handle */}
+          <Box
+            args={[doorWidth * 0.02, height * 0.1, depth * 0.5]}
+            position={[doorWidth * 0.9, 0, depth * 0.6]}
+            onClick={handleLeftDoorClick}
+          >
+            <meshStandardMaterial
+              color="#C0C0C0"
+              metalness={0.8}
+              roughness={0.2}
+            />
+          </Box>
+        </group>
+      </group>
 
-      {/* Right door - opens in opposite direction */}
-      <AnimatedDoor
-        width={doorWidth}
-        height={height}
-        depth={depth}
-        position={[
-          position[0] + doorWidth / 2 + gap / 2,
-          position[1],
-          position[2],
-        ]}
-        color={color}
-        config={{
-          ...config,
-          openAngle: -(config.openAngle || DEFAULT_DOOR_CONFIG.openAngle), // Negative for opposite direction
-        }}
-      />
+      {/* Right door */}
+      <group position={rightPivotPosition}>
+        <group ref={rightPivotRef}>
+          <Box
+            args={[doorWidth, height, depth]}
+            position={[-doorWidth / 2, 0, 0]}
+            onClick={handleRightDoorClick}
+            onPointerOver={(e) => {
+              e.stopPropagation();
+              document.body.style.cursor = "pointer";
+            }}
+            onPointerOut={(e) => {
+              e.stopPropagation();
+              document.body.style.cursor = "auto";
+            }}
+          >
+            <meshStandardMaterial color={color} />
+          </Box>
+          {/* Door handle */}
+          <Box
+            args={[doorWidth * 0.02, height * 0.1, depth * 0.5]}
+            position={[-doorWidth * 0.9, 0, depth * 0.6]}
+            onClick={handleRightDoorClick}
+          >
+            <meshStandardMaterial
+              color="#C0C0C0"
+              metalness={0.8}
+              roughness={0.2}
+            />
+          </Box>
+        </group>
+      </group>
     </group>
   );
 };

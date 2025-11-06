@@ -21,8 +21,10 @@ The door animation system consists of:
 3. **Sound Effects**: Audio feedback timed with animations (opening/closing sounds)
 4. **Interactive Controls**: Click to toggle, hover effects, visual feedback
 5. **Configurable Animations**: Customizable duration, easing, and open angles
-6. **Single and Double Doors**: Support for both single doors and double door configurations
-7. **Cabinet Integration**: Automatic integration with base, upper, and tall cabinets
+6. **Single and Double Doors**: Support for both single doors and double door configurations with synchronized animation
+7. **Drawer Animations**: Animated drawer opening/closing with Promise-based API
+8. **Sound System**: Enhanced sound management with timed sound effects (sounds play before animation ends)
+9. **Cabinet Integration**: Automatic integration with base, upper, and tall cabinets
 
 ### 🎯 Animation Configuration
 
@@ -60,6 +62,8 @@ import { AnimatedDoor } from './builders/animated-door';
 
 ### Double Door Configuration
 
+The `DoubleDoor` component uses `DoubleDoorAnimationController` for synchronized left/right door control:
+
 ```tsx
 import { DoubleDoor } from './builders/animated-door';
 
@@ -71,11 +75,20 @@ import { DoubleDoor } from './builders/animated-door';
   color="#8B7355"
   gap={2}
   config={{
-    openAngle: Math.PI / 2,
-    duration: 800,
+    openAngle: Math.PI / 2,  // 90 degrees
+    duration: 1000,           // 1000ms as in Svelte example
+    easing: easeInOutCubic,
+    playSound: true,
   }}
 />
 ```
+
+**Features:**
+- Left door rotates negative (-MAX_ROTATION) when opening
+- Right door rotates positive (+MAX_ROTATION) when opening
+- Each door can be clicked independently
+- Uses `useFrame` for smooth 60fps updates
+- Proper pivot points at door edges
 
 ### Using the Animation Hook
 
@@ -102,19 +115,61 @@ const MyComponent = () => {
 
 ## Technical Implementation
 
-### Animation Controller
+### Animation Controllers
 
-The `DoorAnimationController` class manages door state and animations:
+#### Single Door Controller
+
+The `DoorAnimationController` class manages single door state and animations:
 
 ```typescript
 const controller = new DoorAnimationController(config, onStateChange);
 
 // Methods
-controller.toggle(); // Toggle between open/closed
+controller.toggle(): // Toggle between open/closed
 controller.open();   // Open the door
 controller.close();  // Close the door
 controller.getState(); // Get current animation state
 controller.dispose(); // Clean up resources
+```
+
+#### Double Door Controller
+
+The `DoubleDoorAnimationController` manages synchronized left/right doors:
+
+```typescript
+const controller = new DoubleDoorAnimationController(config, onStateChange);
+
+// Methods
+controller.toggleLeft();  // Toggle left door (opens negative rotation)
+controller.toggleRight(); // Toggle right door (opens positive rotation)
+controller.getState();    // Get state for both doors
+controller.dispose();     // Clean up resources
+
+// State structure
+interface DoubleDoorAnimationState {
+  leftDoor: {
+    isOpen: boolean;
+    isAnimating: boolean;
+    rotation: number; // Negative when opening (e.g., -π/2)
+  };
+  rightDoor: {
+    isOpen: boolean;
+    isAnimating: boolean;
+    rotation: number; // Positive when opening (e.g., +π/2)
+  };
+}
+```
+
+#### Drawer Controller
+
+The `DrawerAnimationController` manages drawer slide animations:
+
+```typescript
+const controller = new DrawerAnimationController(config);
+
+// Methods
+controller.toggleDrawer({ from, to, onUpdate }): Promise<void>
+controller.getPosition(): number // Current drawer position
 ```
 
 ### Cube-based Pivot Mechanism
@@ -127,11 +182,38 @@ Each animated door uses a small cube positioned at the hinge point:
 
 ### Sound System
 
-Audio feedback is provided through Web Audio API:
-- **Opening Sound**: Higher frequency (800Hz) sine wave
-- **Closing Sound**: Lower frequency (400Hz) sine wave
-- **Graceful Degradation**: Silently fails if audio context unavailable
-- **Short Duration**: 100ms audio clips with fade in/out
+Enhanced sound management with `SoundManager` class:
+
+```typescript
+import { soundManager } from '@/lib/animations';
+
+// Load sounds (should be done during app initialization)
+soundManager.loadSound('doorOpen', '/sounds/door-open.mp3');
+soundManager.loadSound('doorClose', '/sounds/door-close.mp3');
+soundManager.loadSound('drawerOpen', '/sounds/drawer-open.mp3');
+soundManager.loadSound('drawerClose', '/sounds/drawer-close.mp3');
+
+// Play sounds
+soundManager.playSound('doorClose');
+```
+
+**Sound Timing:**
+- Opening sounds: Play at animation start
+- Closing sounds: Play slightly before animation ends (100ms offset)
+- Drawer sounds: Play before animation ends based on sound duration
+
+**Configuration:**
+```typescript
+const SOUND_DURATION = 100;
+const SOUND_DELAY = 0;
+const SOUND_START_OFFSET = ANIMATION_DURATION - (SOUND_DURATION - SOUND_DELAY);
+```
+
+**Features:**
+- HTML5 Audio API for real sound files (when loaded)
+- Automatic sound file loading and caching
+- Graceful degradation if audio unavailable
+- Timing synchronized with animations
 
 ## Cabinet Integration
 
@@ -168,6 +250,7 @@ color={module.materials.facade?.color || "#8B7355"}
 3. **useFrame**: Smooth 60fps animation updates via React Three Fiber
 4. **Resource Cleanup**: Proper disposal of animation controllers and audio contexts
 5. **Batch Updates**: State changes are batched for performance
+6. **Ref-based Rotation Updates**: Rotation values stored in refs for synchronous access in `useFrame`, avoiding stale closure issues (see KIT-32)
 
 ### Memory Management
 
@@ -229,6 +312,69 @@ The implementation follows Kitchen-Craft architecture principles:
 - Proper interface definitions
 - Type-safe configuration objects
 
+### Drawer Animation
+
+The drawer animation system provides Promise-based drawer opening/closing:
+
+```typescript
+import { DrawerAnimationController, DEFAULT_DRAWER_CONFIG } from '@/lib/animations';
+
+const drawerController = new DrawerAnimationController({
+  duration: 1140,  // Default duration
+  easing: easeInOutCubic,
+  playSound: true,
+});
+
+// Toggle drawer with Promise
+await drawerController.toggleDrawer({
+  from: 0,  // Closed position
+  to: 50,   // Open position (distance in mm or units)
+  onUpdate: (position) => {
+    // Update drawer mesh position
+    drawerMeshRef.current.position.z = position;
+  },
+});
+```
+
+**Drawer Animation Features:**
+- Promise-based API for async animation handling
+- Sound effects with proper timing (before animation ends)
+- Configurable duration and easing
+- Smooth position updates via callback
+- Automatic sound selection (opening vs closing)
+
+**Usage in Components:**
+
+```tsx
+import { useRef, useState } from 'react';
+import { DrawerAnimationController } from '@/lib/animations';
+
+const DrawerComponent = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const drawerRef = useRef(null);
+  const controllerRef = useRef(new DrawerAnimationController());
+
+  const toggleDrawer = async () => {
+    await controllerRef.current.toggleDrawer({
+      from: isOpen ? 50 : 0,
+      to: isOpen ? 0 : 50,
+      onUpdate: (pos) => {
+        if (drawerRef.current) {
+          drawerRef.current.position.z = pos;
+        }
+      },
+    });
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <mesh ref={drawerRef} onClick={toggleDrawer}>
+      {/* Drawer geometry */}
+    </mesh>
+  );
+};
+```
+
 ## Future Enhancements
 
 ### Potential Improvements
@@ -278,6 +424,13 @@ interface ExtendedDoorConfig extends DoorAnimationConfig {
    - Check Three.js raycasting setup
    - Ensure proper mesh positioning
 
+4. **Visual Rotation Not Working (Fixed in KIT-32)**
+   - **Issue**: Doors play sound but don't visually rotate
+   - **Root Cause**: `useFrame` was reading stale `animationState.rotation` from closure before React state updates
+   - **Solution**: Use refs (`rotationRef`) to store current rotation values that update synchronously with animation callbacks
+   - **Implementation**: Both `AnimatedDoor` and `DoubleDoor` now use refs for rotation values accessed in `useFrame`
+   - **Files Modified**: `app/(app)/(designer)/components/builders/animated-door.tsx`
+
 ### Debug Mode
 
 Enable debug logging by setting:
@@ -300,10 +453,49 @@ When extending the door animation system:
 
 ## Related Files
 
-- `lib/animations.ts` - Core animation utilities and controller
+- `lib/animations.ts` - Core animation utilities, controllers, and sound system
+  - `DoorAnimationController` - Single door animation
+  - `DoubleDoorAnimationController` - Double door animation (left/right)
+  - `DrawerAnimationController` - Drawer slide animation
+  - `SoundManager` - Sound loading and playback
 - `lib/animations.test.ts` - Animation utility tests
 - `app/(app)/(designer)/components/builders/animated-door.tsx` - Door components
+  - `AnimatedDoor` - Single door component
+  - `DoubleDoor` - Double door component with synchronized animations
 - `app/(app)/(designer)/components/builders/animated-door.test.tsx` - Component tests
 - `app/(app)/(designer)/components/builders/base-cabinet.tsx` - Updated base cabinet
 - `app/(app)/(designer)/components/builders/upper-cabinet.tsx` - Updated upper cabinet
 - `app/(app)/(designer)/components/builders/tall-cabinet.tsx` - Updated tall cabinet
+
+## Sound Files Setup
+
+To enable sound effects, add sound files to your `public/sounds/` directory:
+
+```
+public/
+  sounds/
+    door-open.mp3
+    door-close.mp3
+    drawer-open.mp3
+    drawer-close.mp3
+```
+
+Then load them in your app initialization (e.g., in `app/layout.tsx` or a sound initialization hook):
+
+```typescript
+import { soundManager } from '@/lib/animations';
+import { useEffect } from 'react';
+
+export const SoundInitializer = () => {
+  useEffect(() => {
+    soundManager.loadSound('doorOpen', '/sounds/door-open.mp3');
+    soundManager.loadSound('doorClose', '/sounds/door-close.mp3');
+    soundManager.loadSound('drawerOpen', '/sounds/drawer-open.mp3');
+    soundManager.loadSound('drawerClose', '/sounds/drawer-close.mp3');
+  }, []);
+
+  return null;
+};
+```
+
+If sound files are not loaded, animations will work silently (graceful degradation).

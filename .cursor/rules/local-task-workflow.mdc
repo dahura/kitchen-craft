@@ -1,0 +1,140 @@
+---
+alwaysApply: false
+description: Workflow for local task development with testing, selective commits, and Linear updates
+---
+
+# Local Task Development Workflow
+
+This rule defines the process for working on tasks locally, ensuring proper testing, selective commits, and Linear issue tracking.
+
+// Memory: This workflow ensures quality code through testing before commits and maintains clean git history
+
+## Workflow Steps
+
+### 1. Make Changes
+- Implement the required changes for the task
+- Make incremental changes as needed
+- Keep changes focused on the task scope
+
+// Memory: Focused changes make testing and review easier
+
+### 2. Pause and Request Testing
+**Before committing**, stop and ask the author to test locally:
+
+```
+Изменения готовы к локальному тестированию. Пожалуйста, протестируйте:
+- Запустите `bun dev`
+- Перейдите на http://localhost:3000
+- Проверьте: [описание того, что нужно проверить]
+```
+
+**Wait for user confirmation** that testing passed before proceeding.
+
+// Memory: Testing before commit catches issues early and prevents broken commits
+
+### 3. Commit Only Task-Related Files
+**After user confirms testing passed**, commit **only** the files that:
+- Were changed for this specific task
+- Are directly related to the task requirements
+
+**Do NOT commit:**
+- Unrelated changes
+- Temporary files
+- Generated files
+- Files modified accidentally
+
+**Commit command:**
+```bash
+# Stage only task-related files
+git add <path-to-task-file-1> <path-to-task-file-2> ...
+
+# Commit with issue reference
+git commit -m "KIT-<IssueNumber>: <concise summary of changes>"
+```
+
+**Example:**
+```bash
+git add lib/animations.ts app/(app)/(designer)/components/builders/animated-door.tsx DOOR_ANIMATIONS.md
+git commit -m "KIT-32: Fix door rotation using refs to avoid stale closure issues"
+```
+
+// Memory: Selective commits keep git history clean and make code review easier
+
+### 4. Update Linear Issue to Done
+**After committing**, update the Linear issue status to `Done`:
+
+```typescript
+mcp_Linear_update_issue({
+  id: "KIT-XX",
+  state: "Done"
+});
+```
+
+// Memory: Status updates keep project visibility accurate
+
+### 5. Add Summary Comment to Linear
+**After updating status**, add a brief, informative comment summarizing what was done:
+
+```typescript
+mcp_Linear_create_comment({
+  issueId: "KIT-XX",
+  body: `[${new Date().toISOString().split('T')[0]}] Завершено: <краткое описание изменений и решения>`
+});
+```
+
+**Comment should include:**
+- What was changed
+- Why it was changed (if not obvious)
+- Key files modified
+- Any important notes for future reference
+
+**Example:**
+```
+[2025-01-15] Завершено: Исправлена проблема с визуальным вращением дверей. 
+Использованы refs для хранения значений вращения, чтобы избежать проблем 
+со stale closures в useFrame. Изменены файлы: animated-door.tsx, animations.ts.
+```
+
+// Memory: Comments preserve history and help understand decisions later
+
+## Complete Example Flow
+
+1. **Make changes:**
+   - Modify `animated-door.tsx` to use refs
+   - Update `animations.ts` with sound system
+   - Update `DOOR_ANIMATIONS.md` documentation
+
+2. **Request testing:**
+   ```
+   Изменения готовы к тестированию. Запустите `bun dev` и проверьте 
+   анимацию дверей - они должны визуально вращаться при клике.
+   ```
+
+3. **User confirms:** "Все работает, можно коммитить"
+
+4. **Selective commit:**
+   ```bash
+   git add lib/animations.ts app/(app)/(designer)/components/builders/animated-door.tsx DOOR_ANIMATIONS.md
+   git commit -m "KIT-32: Fix door rotation using refs"
+   ```
+
+5. **Update Linear:**
+   ```typescript
+   mcp_Linear_update_issue({
+     id: "KIT-32",
+     state: "Done"
+   });
+   mcp_Linear_create_comment({
+     issueId: "KIT-32",
+     body: "[2025-01-15] Завершено: Исправлена проблема с визуальным вращением дверей через использование refs для синхронного доступа к значениям вращения в useFrame."
+   });
+   ```
+
+## Important Notes
+
+- **Never commit without testing confirmation** - Always wait for user approval
+- **Only commit task-related files** - Keep commits focused and clean
+- **Always update Linear** - Status and comments maintain project history
+- **Keep comments concise but informative** - They serve as project memory
+
+// Memory: Following this workflow ensures quality code and maintains clean project history
