@@ -41,7 +41,7 @@ export const AnimatedDrawer: React.FC<AnimatedDrawerProps> = ({
   onClick,
 }) => {
   const drawerGroupRef = useRef<THREE.Group>(null);
-  const drawerMeshRef = useRef<THREE.Mesh>(null);
+  const drawerContainerRef = useRef<THREE.Group>(null);
   const controllerRef = useRef<DrawerAnimationController | null>(null);
   const [hovered, setHovered] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -52,6 +52,9 @@ export const AnimatedDrawer: React.FC<AnimatedDrawerProps> = ({
 
   // Calculate slide distance (drawer slides forward by its depth)
   const slideDistance = useMemo(() => depth * 0.8, [depth]);
+
+  // Thickness of drawer panels
+  const panelThickness = useMemo(() => 1.5, []);
 
   // Memoize config to prevent unnecessary re-renders
   const mergedConfig = useMemo(
@@ -78,9 +81,9 @@ export const AnimatedDrawer: React.FC<AnimatedDrawerProps> = ({
     }
 
     // Add subtle hover effect
-    if (drawerMeshRef.current) {
+    if (drawerContainerRef.current) {
       const targetScale = hovered ? 1.02 : 1.0;
-      drawerMeshRef.current.scale.lerp(
+      drawerContainerRef.current.scale.lerp(
         new THREE.Vector3(targetScale, targetScale, targetScale),
         0.1
       );
@@ -124,23 +127,79 @@ export const AnimatedDrawer: React.FC<AnimatedDrawerProps> = ({
     document.body.style.cursor = "auto";
   };
 
+  // Memoize drawer material to prevent unnecessary re-renders
+  const drawerMaterial = useMemo(
+    () => (
+      <meshStandardMaterial
+        color={color}
+        transparent
+        opacity={hovered ? 0.9 : 1.0}
+      />
+    ),
+    [color, hovered]
+  );
+
   return (
     <group position={position} ref={drawerGroupRef}>
-      {/* Drawer mesh */}
-      <Box
-        ref={drawerMeshRef}
-        args={[width, height, depth]}
-        position={[0, 0, 0]}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
-        onClick={handleClick}
-      >
-        <meshStandardMaterial
-          color={color}
-          transparent
-          opacity={hovered ? 0.9 : 1.0}
-        />
-      </Box>
+      {/* Drawer container - open-top box with 5 sides */}
+      <group ref={drawerContainerRef}>
+        {/* Bottom panel */}
+        <Box
+          args={[width, panelThickness, depth]}
+          position={[0, -height / 2 + panelThickness / 2, 0]}
+          onPointerOver={handlePointerOver}
+          onPointerOut={handlePointerOut}
+          onClick={handleClick}
+        >
+          {drawerMaterial}
+        </Box>
+
+        {/* Front panel - full height, top remains open */}
+        <Box
+          args={[width, height, panelThickness]}
+          position={[0, 0, depth / 2 - panelThickness / 2]}
+          onPointerOver={handlePointerOver}
+          onPointerOut={handlePointerOut}
+          onClick={handleClick}
+        >
+          {drawerMaterial}
+        </Box>
+
+        {/* Back panel - full height, top remains open */}
+        <Box
+          args={[width, height, panelThickness]}
+          position={[0, 0, -depth / 2 + panelThickness / 2]}
+          onPointerOver={handlePointerOver}
+          onPointerOut={handlePointerOut}
+          onClick={handleClick}
+        >
+          {drawerMaterial}
+        </Box>
+
+        {/* Left side panel - full height, top remains open */}
+        <Box
+          args={[panelThickness, height, depth]}
+          position={[-width / 2 + panelThickness / 2, 0, 0]}
+          onPointerOver={handlePointerOver}
+          onPointerOut={handlePointerOut}
+          onClick={handleClick}
+        >
+          {drawerMaterial}
+        </Box>
+
+        {/* Right side panel - full height, top remains open */}
+        <Box
+          args={[panelThickness, height, depth]}
+          position={[width / 2 - panelThickness / 2, 0, 0]}
+          onPointerOver={handlePointerOver}
+          onPointerOut={handlePointerOut}
+          onClick={handleClick}
+        >
+          {drawerMaterial}
+        </Box>
+
+        {/* Top is intentionally left open to allow viewing contents */}
+      </group>
 
       {/* Drawer handle - positioned on the front */}
       <Box
