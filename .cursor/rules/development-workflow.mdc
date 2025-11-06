@@ -8,12 +8,15 @@ Use this checklist whenever you (or the AI) **start working on a new Linear task
 
 **Status Management:** See [linear-status-management.mdc](mdc:.cursor/rules/linear-status-management.mdc) for automatic Linear status updates at each step.
 
-## 1. Sync `main`
+## 1. Sync `main` (MANDATORY before creating branch)
+**CRITICAL:** Always switch to main and pull latest changes before creating a new feature branch.
+
 ```bash
 git switch main
 git pull --ff-only
 ```
-// Memory: Always start with clean main branch to avoid conflicts
+
+// Memory: Always start with clean main branch to avoid conflicts. This step is MANDATORY.
 
 ## 2. Create feature branch
 Branch name pattern:
@@ -24,6 +27,10 @@ Examples:
 ```
 feature/KIT-42-fix-validation-crash
 feature/KIT-128-room-texture-refactor
+```
+
+```bash
+git checkout -b feature/KIT-<IssueNumber>-<slugified-title>
 ```
 
 // Memory: Branch naming convention helps track issues and maintain clean git history
@@ -69,13 +76,17 @@ git push --set-upstream origin $(git branch --show-current)
 ```
 // Memory: Commit messages should reference the issue for traceability
 
-## 7. Open PR via `gh`
+## 7. Create Pull Request (MANDATORY after first push)
+**CRITICAL:** After creating a new feature branch and pushing the first commit, immediately create a Pull Request to `main`.
+
 Run:
 ```bash
 gh pr create --base main --fill
 ```
 
-// Memory: PRs enable code review and discussion before merging
+**Important:** PR should be created as soon as the branch exists, even if work is still in progress. This allows for early feedback and visibility.
+
+// Memory: PRs enable code review and discussion before merging. Create PR immediately after branch creation.
 
 **After creating PR:** Update Linear issue status to `In Review` and add comment with PR link:
 ```typescript
@@ -127,7 +138,27 @@ Example:
 
 When resuming, **always read latest Linear comments** and continue.
 
-## 9. After PR Merge (if applicable)
+## 9. When User Confirms Fix Works
+**Important:** Before updating Linear status, ensure code is committed and pushed:
+1. **First:** Commit and push changes (if not already done)
+2. **Then:** Update Linear issue status:
+   - If PR not created yet: Create PR first, then update to `In Review`
+   - If PR exists: Update to `In Review` (if not already)
+   - **Never move to `Done` before code is pushed and PR is merged**
+
+```typescript
+// After user confirms fix works:
+// 1. Ensure: git commit && git push
+// 2. Then update status (not Done yet!)
+mcp_Linear_update_issue({
+  id: "KIT-XX",
+  state: "In Review"  // Not Done - wait for PR merge
+});
+```
+
+// Memory: Always push code before updating Linear status. Done only after PR merge.
+
+## 10. After PR Merge (if applicable)
 When PR is merged to main, update Linear issue status to `Done`:
 ```typescript
 mcp_Linear_update_issue({
@@ -140,11 +171,26 @@ mcp_Linear_create_comment({
 });
 ```
 
-// Memory: Final status update closes the loop and marks completion
+// Memory: Final status update closes the loop and marks completion. Done status only after PR merge.
 
-**Note:** If user confirms fix works before PR merge, you may update status to `In Review` earlier. Always verify correct status names using `mcp_Linear_list_issue_statuses({ team: "Kitchen-kraft" }).
+**Note:** Always verify correct status names using `mcp_Linear_list_issue_statuses({ team: "Kitchen-kraft" })`.
 
-## 10. Memory Bank Guidelines
+## Example Flow
+
+1. User: "Fix KIT-21"
+2. **MANDATORY:** AI switches to `main` → `git pull --ff-only`
+3. AI creates branch → Updates KIT-21 to `In Progress`
+4. AI implements fix → Commits code → Pushes to remote
+5. **MANDATORY:** AI creates PR immediately → Updates KIT-21 to `In Review`
+6. User confirms fix works → **Ensure code is pushed** → Keep `In Review` (not Done yet!)
+7. PR merged → Updates KIT-21 to `Done`
+
+**Critical Rules:**
+- **Always** sync `main` before creating a new branch
+- **Always** create PR immediately after first push to feature branch
+- **Never** move to `Done` before code is pushed and PR is merged
+
+## 11. Memory Bank Guidelines
 
 ### Comment Format for Memory
 All comments should follow this pattern to serve as effective memory:
