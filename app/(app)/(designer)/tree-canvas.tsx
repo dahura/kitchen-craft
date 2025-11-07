@@ -9,6 +9,7 @@ import { BaseCabinet } from "./components/builders/base-cabinet";
 import { UpperCabinet } from "./components/builders/upper-cabinet";
 import { TallCabinet } from "./components/builders/tall-cabinet";
 import { Plinth } from "./components/builders/plinth";
+import { Countertop } from "./components/builders/countertop";
 import { Room } from "./components/room";
 import { RoomMaterialsPanel } from "./components/room-materials-panel";
 import {
@@ -148,6 +149,17 @@ export const SceneContent = () => {
         modules={baseModules}
         plinthHeight={plinthHeight}
         plinthDepth={plinthDepth}
+      />
+
+      {/* Столешница */}
+      <Countertop
+        modules={renderableModules}
+        kitchenConfig={currentConfig}
+        countertopMaterial={
+          materialLibrary.countertops[
+            currentConfig.defaultMaterials.countertop
+          ]
+        }
       />
 
       {/* Модули кухни */}
