@@ -99,13 +99,17 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
       const elements = [];
 
       // Draw multiple shelves - tall cabinets have many shelves
+      // positionFromBottom is relative to the bottom of the module (including carcass)
       structure.shelves.forEach((shelf) => {
+        // Convert positionFromBottom to position relative to module center
+        // Module center is at height/2, so shelf Y = positionFromBottom - height/2 + carcassThickness
+        const shelfY = shelf.positionFromBottom - module.dimensions.height / 2 + carcassThickness;
         elements.push(
           <Shelf
             key={`shelf-${shelf.positionFromBottom}`}
             width={internalWidth}
             depth={internalDepth - 1}
-            position={[0, shelf.positionFromBottom, 0]}
+            position={[0, shelfY, 0]}
             color="#D2691E" // Shelf color
           />
         );
