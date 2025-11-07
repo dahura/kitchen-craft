@@ -38,6 +38,29 @@ export const exampleKitchenConfig: KitchenConfig = {
       length: 360,
       direction: { x: 1, z: 0 },
       modules: [
+        // Tall cabinet first - connects base to upper cabinets
+        {
+          id: "tall-1",
+          type: "tall",
+          variant: "pantry",
+          width: 60,
+          positioning: { anchor: "floor-and-ceiling", offset: { y: 0 } },
+          handle: { placement: { type: "centered", orientation: "vertical" } },
+          structure: {
+            type: "door-and-shelf",
+            doorCount: 2,
+            shelves: [
+              { positionFromBottom: 40 },
+              { positionFromBottom: 80 },
+              { positionFromBottom: 120 },
+              { positionFromBottom: 160 },
+            ],
+          },
+          carcass: {
+            thickness: 1.8,
+            backPanelThickness: 0.5,
+          },
+        },
         // 5 Lower Cabinets
         {
           id: "base-1",
@@ -144,41 +167,36 @@ export const exampleKitchenConfig: KitchenConfig = {
         },
       ],
     },
-    {
-      id: "side_wall",
-      name: "Side Wall",
-      length: 240,
-      direction: { x: 0, z: -1 },
-      modules: [
-        // 1 Tall Cabinet
-        {
-          id: "tall-1",
-          type: "tall",
-          variant: "pantry",
-          width: 60,
-          positioning: { anchor: "floor-and-ceiling", offset: { y: 0 } },
-          handle: { placement: { type: "centered", orientation: "vertical" } },
-          structure: {
-            type: "door-and-shelf",
-            doorCount: 2,
-            shelves: [
-              { positionFromBottom: 40 },
-              { positionFromBottom: 80 },
-              { positionFromBottom: 120 },
-              { positionFromBottom: 160 },
-              { positionFromBottom: 200 }
-            ],
-          },
-          carcass: {
-            thickness: 1.8,
-            backPanelThickness: 0.5,
-          },
-        },
-      ],
-    },
   ],
   hangingModules: [
-    // 4 Upper Cabinets
+    // 5 Upper Cabinets (including one for tall-1)
+    {
+      id: "upper-tall-1",
+      type: "upper",
+      variant: "single_door",
+      width: 60,
+      positioning: {
+        anchor: "countertop",
+        offset: { y: 50 },
+        alignWithModule: "tall-1",
+      },
+      materialOverrides: {
+        facade: "modern_white_matte",
+      },
+      structure: {
+        type: "door-and-shelf",
+        doorCount: 1,
+        shelves: [
+          { positionFromBottom: 15 },
+          { positionFromBottom: 35 },
+          { positionFromBottom: 55 },
+        ],
+      },
+      carcass: {
+        thickness: 1.8,
+        backPanelThickness: 0.5,
+      },
+    },
     {
       id: "upper-1",
       type: "upper",

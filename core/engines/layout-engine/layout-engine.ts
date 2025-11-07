@@ -25,7 +25,7 @@ import { calculateKitchenBoundingBox } from "../../../app/(app)/(designer)/utils
  */
 export function generate(
   kitchenConfig: KitchenConfig,
-  materialLibrary: MaterialLibrary,
+  materialLibrary: MaterialLibrary
 ): RenderableModule[] {
   return generateWithCentering(kitchenConfig, materialLibrary, {
     enabled: false,
@@ -42,7 +42,7 @@ export function generate(
 export function generateWithCentering(
   kitchenConfig: KitchenConfig,
   materialLibrary: MaterialLibrary,
-  centeringOptions: CenteringOptions,
+  centeringOptions: CenteringOptions
 ): RenderableModule[] {
   const renderableModules: RenderableModule[] = [];
   const { globalSettings, defaultMaterials } = kitchenConfig;
@@ -53,7 +53,7 @@ export function generateWithCentering(
     const processedModules = processModulesOnLine(
       line.modules,
       line.length,
-      globalSettings,
+      globalSettings
     );
 
     // Determine along which axis the line extends (X or Z) and its direction (+/-)
@@ -82,7 +82,7 @@ export function generateWithCentering(
         lineRotation,
         globalSettings,
         defaultMaterials,
-        materialLibrary,
+        materialLibrary
       );
 
       renderableModules.push(renderableModule);
@@ -96,11 +96,11 @@ export function generateWithCentering(
   // --- Шаг 2: Обработка hangingModules ---
   for (const hangingModule of kitchenConfig.hangingModules) {
     const baseModule = renderableModules.find(
-      (m) => m.id === hangingModule.positioning.alignWithModule,
+      (m) => m.id === hangingModule.positioning.alignWithModule
     );
     if (!baseModule) {
       console.warn(
-        `Hanging module ${hangingModule.id} could not find its base module ${hangingModule.positioning.alignWithModule}`,
+        `Hanging module ${hangingModule.id} could not find its base module ${hangingModule.positioning.alignWithModule}`
       );
       continue;
     }
@@ -110,7 +110,7 @@ export function generateWithCentering(
       baseModule,
       globalSettings,
       defaultMaterials,
-      materialLibrary,
+      materialLibrary
     );
     renderableModules.push(renderableModule);
   }
@@ -120,7 +120,7 @@ export function generateWithCentering(
     const centeredModules = applyCentering(
       renderableModules,
       kitchenConfig,
-      centeringOptions,
+      centeringOptions
     );
     return centeredModules;
   }
@@ -134,7 +134,7 @@ export function generateWithCentering(
 function applyCentering(
   modules: RenderableModule[],
   kitchenConfig: KitchenConfig,
-  centeringOptions: CenteringOptions,
+  centeringOptions: CenteringOptions
 ): RenderableModule[] {
   // Вычисляем bounding box для всех модулей
   const boundingBox = calculateKitchenBoundingBox(modules);
@@ -185,12 +185,12 @@ function applyCentering(
  */
 export function generateEnhanced(
   kitchenConfig: EnhancedKitchenConfig,
-  materialLibrary: MaterialLibrary,
+  materialLibrary: MaterialLibrary
 ): RenderableModule[] {
   return generateWithCentering(
     kitchenConfig,
     materialLibrary,
-    kitchenConfig.globalSettings.roomConfiguration.centering,
+    kitchenConfig.globalSettings.roomConfiguration.centering
   );
 }
 
@@ -205,14 +205,14 @@ function calculateRotation(direction: { x: number; z: number }): Rotation {
 function processModulesOnLine(
   modules: ModuleConfig[],
   lineLength: number,
-  globalSettings: KitchenConfig["globalSettings"],
+  globalSettings: KitchenConfig["globalSettings"]
 ): (ModuleConfig & { finalWidth: number })[] {
   const fixedModules = modules.filter((m) => m.width !== "auto");
   const autoModules = modules.filter((m) => m.width === "auto");
 
   const totalFixedWidth = fixedModules.reduce(
     (sum, m) => sum + (m.width as number),
-    0,
+    0
   );
   const totalGaps =
     (modules.length - 1) * globalSettings.rules.gapBetweenModules;
@@ -233,18 +233,28 @@ function createRenderableModule(
   rotation: Rotation,
   globalSettings: KitchenConfig["globalSettings"],
   defaultMaterials: KitchenConfig["defaultMaterials"],
-  materialLibrary: MaterialLibrary,
+  materialLibrary: MaterialLibrary
 ): RenderableModule {
   // Определяем, нужно ли размещать модуль на цоколе
-  const needsPlinth = module.type === "base" || module.type === "sink" || module.type === "tall";
+  // Tall cabinets with "floor-and-ceiling" anchor should also start at floor level
+  const needsPlinth =
+    module.type === "base" ||
+    module.type === "sink" ||
+    module.positioning.anchor === "floor-and-ceiling";
   const plinthOffset = needsPlinth ? globalSettings.dimensions.plinthHeight : 0;
 
-  // Для tall cabinets с anchor "floor-and-ceiling" высота от пола до потолка
+  // Calculate height based on module type and positioning
   let height: number;
-  if (module.type === "tall" && module.positioning.anchor === "floor-and-ceiling") {
-    // Высота от пола до потолка минус цоколь
-    height = globalSettings.dimensions.height - plinthOffset;
+  if (module.positioning.anchor === "floor-and-ceiling") {
+    // Tall cabinets extend from plinth to top of upper cabinets
+    // Upper cabinets top = countertopHeight + wallGap + wallCabinetHeight
+    const upperCabinetsTop =
+      globalSettings.dimensions.countertopHeight +
+      globalSettings.dimensions.wallGap +
+      globalSettings.dimensions.wallCabinetHeight;
+    height = upperCabinetsTop - plinthOffset;
   } else {
+    // Base cabinets use offset.y or default baseCabinetHeight
     height =
       module.positioning.offset.y ||
       globalSettings.dimensions.baseCabinetHeight;
@@ -256,14 +266,9 @@ function createRenderableModule(
     depth: globalSettings.dimensions.countertopDepth,
   };
 
-  // Для tall cabinets позиционируем от пола (с учетом цоколя)
-  let yPosition: number;
-  if (module.type === "tall" && module.positioning.anchor === "floor-and-ceiling") {
-    // Позиция Y начинается с цоколя, центр модуля на половине высоты
-    yPosition = plinthOffset + height / 2;
-  } else {
-    yPosition = (module.positioning.offset.y || 0) + plinthOffset;
-  }
+  // Calculate Y position - same formula for both base and tall cabinets
+  // They should start from the same level (plinth)
+  const yPosition = (module.positioning.offset.y || 0) + plinthOffset;
 
   const position: Position = {
     x: relativePos.x,
@@ -294,7 +299,7 @@ function createRenderableModule(
       const handleModule = createHandleModule(
         module.handle.placement,
         mainModule,
-        handleDefinition.material,
+        handleDefinition.material
       );
       mainModule.children.push(handleModule);
     }
@@ -308,16 +313,8 @@ function createHangingModule(
   baseModule: RenderableModule,
   globalSettings: KitchenConfig["globalSettings"],
   defaultMaterials: KitchenConfig["defaultMaterials"],
-  materialLibrary: MaterialLibrary,
+  materialLibrary: MaterialLibrary
 ): RenderableModule {
-  const position: Position = {
-    x: baseModule.position.x,
-    y:
-      globalSettings.dimensions.countertopHeight +
-      globalSettings.dimensions.wallGap,
-    z: baseModule.position.z,
-  };
-
   const dimensions: Dimensions = {
     width:
       hangingModule.width === "auto"
@@ -325,6 +322,19 @@ function createHangingModule(
         : (hangingModule.width as number),
     height: globalSettings.dimensions.wallCabinetHeight,
     depth: globalSettings.dimensions.wallCabinetDepth,
+  };
+
+  // Align upper cabinets with back wall of base cabinets
+  // Upper cabinets are shallower, so shift them back to align back walls
+  const depthDifference = baseModule.dimensions.depth - dimensions.depth;
+  const zOffset = depthDifference / 2;
+
+  const position: Position = {
+    x: baseModule.position.x,
+    y:
+      globalSettings.dimensions.countertopHeight +
+      globalSettings.dimensions.wallGap,
+    z: baseModule.position.z - zOffset,
   };
 
   return {
@@ -346,7 +356,7 @@ function createHangingModule(
     materials: resolveMaterials(
       hangingModule,
       defaultMaterials,
-      materialLibrary,
+      materialLibrary
     ),
     children: [],
   };
@@ -355,7 +365,7 @@ function createHangingModule(
 function createHandleModule(
   placement: HandlePlacement,
   parentModule: RenderableModule,
-  handleMaterial: MaterialDefinition,
+  handleMaterial: MaterialDefinition
 ): RenderableModule {
   const position: Position = {
     x: parentModule.position.x,
@@ -383,7 +393,7 @@ function createHandleModule(
 function resolveMaterials(
   module: ModuleConfig | HangingModuleConfig,
   defaultMaterials: KitchenConfig["defaultMaterials"],
-  materialLibrary: MaterialLibrary,
+  materialLibrary: MaterialLibrary
 ): Record<string, MaterialDefinition> {
   const resolved: Record<string, MaterialDefinition> = {};
   const overrides = module.materialOverrides || {};
