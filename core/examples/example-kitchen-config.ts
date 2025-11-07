@@ -49,7 +49,11 @@ export const exampleKitchenConfig: KitchenConfig = {
           structure: {
             type: "door-and-shelf",
             doorCount: 1,
-            shelves: [{ positionFromBottom: 30 }],
+            shelves: [
+              { positionFromBottom: 25 },
+              { positionFromBottom: 50 },
+              { positionFromBottom: 75 },
+            ],
           },
           carcass: {
             thickness: 1.8,
@@ -86,7 +90,11 @@ export const exampleKitchenConfig: KitchenConfig = {
           structure: {
             type: "door-and-shelf",
             doorCount: 2,
-            shelves: [{ positionFromBottom: 20 }],
+            shelves: [
+              { positionFromBottom: 20 },
+              { positionFromBottom: 45 },
+              { positionFromBottom: 70 },
+            ],
           },
           carcass: {
             thickness: 1.8,
@@ -103,7 +111,11 @@ export const exampleKitchenConfig: KitchenConfig = {
           structure: {
             type: "door-and-shelf",
             doorCount: 1,
-            shelves: [{ positionFromBottom: 30 }, { positionFromBottom: 60 }],
+            shelves: [
+              { positionFromBottom: 25 },
+              { positionFromBottom: 50 },
+              { positionFromBottom: 75 },
+            ],
           },
           carcass: {
             thickness: 1.8,
@@ -180,6 +192,19 @@ export const exampleKitchenConfig: KitchenConfig = {
       materialOverrides: {
         facade: "modern_white_matte",
       },
+      structure: {
+        type: "door-and-shelf",
+        doorCount: 1,
+        shelves: [
+          { positionFromBottom: 15 },
+          { positionFromBottom: 35 },
+          { positionFromBottom: 55 },
+        ],
+      },
+      carcass: {
+        thickness: 1.8,
+        backPanelThickness: 0.5,
+      },
     },
     {
       id: "upper-2",
@@ -193,6 +218,19 @@ export const exampleKitchenConfig: KitchenConfig = {
       },
       materialOverrides: {
         facade: "modern_white_matte",
+      },
+      structure: {
+        type: "door-and-shelf",
+        doorCount: 2,
+        shelves: [
+          { positionFromBottom: 15 },
+          { positionFromBottom: 35 },
+          { positionFromBottom: 55 },
+        ],
+      },
+      carcass: {
+        thickness: 1.8,
+        backPanelThickness: 0.5,
       },
     },
     {
@@ -208,6 +246,19 @@ export const exampleKitchenConfig: KitchenConfig = {
       materialOverrides: {
         facade: "modern_white_matte",
       },
+      structure: {
+        type: "door-and-shelf",
+        doorCount: 2,
+        shelves: [
+          { positionFromBottom: 15 },
+          { positionFromBottom: 35 },
+          { positionFromBottom: 55 },
+        ],
+      },
+      carcass: {
+        thickness: 1.8,
+        backPanelThickness: 0.5,
+      },
     },
     {
       id: "upper-4",
@@ -221,6 +272,19 @@ export const exampleKitchenConfig: KitchenConfig = {
       },
       materialOverrides: {
         facade: "modern_white_matte",
+      },
+      structure: {
+        type: "door-and-shelf",
+        doorCount: 1,
+        shelves: [
+          { positionFromBottom: 15 },
+          { positionFromBottom: 35 },
+          { positionFromBottom: 55 },
+        ],
+      },
+      carcass: {
+        thickness: 1.8,
+        backPanelThickness: 0.5,
       },
     },
   ],
