@@ -316,8 +316,15 @@ function createHangingModule(
     position,
     rotation: baseModule.rotation,
     dimensions,
-    structure: { type: "door-and-shelf", doorCount: 1, shelves: [] },
-    carcass: { thickness: 1.8, backPanelThickness: 0.5 },
+    structure: hangingModule.structure || {
+      type: "door-and-shelf",
+      doorCount: hangingModule.variant === "double_door" ? 2 : 1,
+      shelves: [],
+    },
+    carcass: hangingModule.carcass || {
+      thickness: 1.8,
+      backPanelThickness: 0.5,
+    },
     materials: resolveMaterials(
       hangingModule,
       defaultMaterials,

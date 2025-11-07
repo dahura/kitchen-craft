@@ -108,6 +108,8 @@ export interface HangingModuleConfig {
   materialOverrides?: Partial<
     Record<"facade" | "countertop" | "handle", string>
   >;
+  structure?: Structure; // Описание внутреннего наполнения
+  carcass?: Carcass; // Описание корпуса
 }
 
 export interface GlobalSettings {
