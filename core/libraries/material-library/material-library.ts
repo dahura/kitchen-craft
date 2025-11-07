@@ -17,6 +17,12 @@ export const materialLibrary: MaterialLibrary = {
       diffuseMap: "textures/concrete_grey_diffuse.jpg",
       normalMap: "textures/concrete_grey_normal.jpg",
     },
+    quartz_grey: {
+      type: "quartz",
+      color: "#E8E8E8",
+      roughness: 0.3,
+      metalness: 0.1,
+    },
   },
   handles: {
     minimalist_bar_black: {
