@@ -235,21 +235,39 @@ function createRenderableModule(
   defaultMaterials: KitchenConfig["defaultMaterials"],
   materialLibrary: MaterialLibrary,
 ): RenderableModule {
+  // Определяем, нужно ли размещать модуль на цоколе
+  const needsPlinth = module.type === "base" || module.type === "sink" || module.type === "tall";
+  const plinthOffset = needsPlinth ? globalSettings.dimensions.plinthHeight : 0;
+
+  // Для tall cabinets с anchor "floor-and-ceiling" высота от пола до потолка
+  let height: number;
+  if (module.type === "tall" && module.positioning.anchor === "floor-and-ceiling") {
+    // Высота от пола до потолка минус цоколь
+    height = globalSettings.dimensions.height - plinthOffset;
+  } else {
+    height =
+      module.positioning.offset.y ||
+      globalSettings.dimensions.baseCabinetHeight;
+  }
+
   const dimensions: Dimensions = {
     width: module.finalWidth,
-    height:
-      module.positioning.offset.y ||
-      globalSettings.dimensions.baseCabinetHeight,
+    height,
     depth: globalSettings.dimensions.countertopDepth,
   };
 
-  // Определяем, нужно ли размещать модуль на цоколе
-  const needsPlinth = module.type === "base" || module.type === "sink";
-  const plinthOffset = needsPlinth ? globalSettings.dimensions.plinthHeight : 0;
+  // Для tall cabinets позиционируем от пола (с учетом цоколя)
+  let yPosition: number;
+  if (module.type === "tall" && module.positioning.anchor === "floor-and-ceiling") {
+    // Позиция Y начинается с цоколя, центр модуля на половине высоты
+    yPosition = plinthOffset + height / 2;
+  } else {
+    yPosition = (module.positioning.offset.y || 0) + plinthOffset;
+  }
 
   const position: Position = {
     x: relativePos.x,
-    y: (module.positioning.offset.y || 0) + plinthOffset,
+    y: yPosition,
     z: relativePos.z,
   };
 

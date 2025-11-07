@@ -139,29 +139,29 @@ export const exampleKitchenConfig: KitchenConfig = {
       direction: { x: 0, z: -1 },
       modules: [
         // 1 Tall Cabinet
-        // {
-        //   id: "tall-1",
-        //   type: "tall",
-        //   variant: "pantry",
-        //   width: 60,
-        //   positioning: { anchor: "floor-and-ceiling", offset: { y: 0 } },
-        //   handle: { placement: { type: "centered", orientation: "vertical" } },
-        //   structure: {
-        //     type: "door-and-shelf",
-        //     doorCount: 2,
-        //     shelves: [
-        //       { positionFromBottom: 40 },
-        //       { positionFromBottom: 80 },
-        //       { positionFromBottom: 120 },
-        //       { positionFromBottom: 160 },
-        //       { positionFromBottom: 200 }
-        //     ],
-        //   },
-        //   carcass: {
-        //     thickness: 1.8,
-        //     backPanelThickness: 0.5,
-        //   },
-        // },
+        {
+          id: "tall-1",
+          type: "tall",
+          variant: "pantry",
+          width: 60,
+          positioning: { anchor: "floor-and-ceiling", offset: { y: 0 } },
+          handle: { placement: { type: "centered", orientation: "vertical" } },
+          structure: {
+            type: "door-and-shelf",
+            doorCount: 2,
+            shelves: [
+              { positionFromBottom: 40 },
+              { positionFromBottom: 80 },
+              { positionFromBottom: 120 },
+              { positionFromBottom: 160 },
+              { positionFromBottom: 200 }
+            ],
+          },
+          carcass: {
+            thickness: 1.8,
+            backPanelThickness: 0.5,
+          },
+        },
       ],
     },
   ],
