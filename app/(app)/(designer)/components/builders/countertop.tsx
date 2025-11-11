@@ -34,6 +34,10 @@ export const Countertop = ({
   kitchenConfig,
   countertopMaterial,
 }: CountertopProps) => {
+  // Load shader material at top level (Hook rules)
+  // Memory: Hooks must be called at the top level of component, not inside useMemo
+  const shaderMaterial = useShaderMaterialFromDefinition(countertopMaterial);
+
   const {
     countertopHeight,
     countertopDepth,
@@ -126,29 +130,8 @@ export const Countertop = ({
     return segments;
   }, [modules, gapBetweenModules]);
 
-  // Create material from countertopMaterial definition
-  const material = useMemo(() => {
-    if (!countertopMaterial) {
-      // Default material if none provided
-      return <meshStandardMaterial color="#E8E8E8" roughness={0.6} />;
-    }
-
-    // Try to load shader material first
-    const shaderMaterial = useShaderMaterialFromDefinition(countertopMaterial);
-    
-    if (shaderMaterial) {
-      return shaderMaterial as React.ReactNode;
-    }
-
-    // Fallback to standard material
-    return (
-      <meshStandardMaterial
-        color={countertopMaterial.color || "#E8E8E8"}
-        roughness={countertopMaterial.roughness ?? 0.6}
-        metalness={countertopMaterial.metalness ?? 0.0}
-      />
-    );
-  }, [countertopMaterial]);
+  // Material rendering (use shader if available, otherwise standard)
+  // Memory: Return Three.js material or JSX depending on type
 
   return (
     <group>
@@ -164,18 +147,35 @@ export const Countertop = ({
         const zOffset = countertopOverhang / 2; // Forward (positive Z - towards facade)
         const xOffset = 0; // No X offset for 0° rotation
 
+        // Use shader material as prop if available
+        const boxProps: any = {
+          key: `countertop-${segment.start}-${segment.end}-${segment.z}-${segment.rotation}-${index}`,
+          args: [segment.width, countertopThickness, countertopTotalDepth],
+          position: [
+            segment.centerX + xOffset,
+            plinthHeight + countertopHeight + countertopThickness / 2,
+            segment.z + zOffset,
+          ] as [number, number, number],
+          rotation: [0, rotationRad, 0] as [number, number, number],
+        };
+
+        // Attach shader material as prop if available
+        if (shaderMaterial) {
+          boxProps.material = shaderMaterial;
+        }
+
         return (
-          <Box
-            key={`countertop-${segment.start}-${segment.end}-${segment.z}-${segment.rotation}-${index}`}
-            args={[segment.width, countertopThickness, countertopTotalDepth]}
-            position={[
-              segment.centerX + xOffset,
-              plinthHeight + countertopHeight + countertopThickness / 2,
-              segment.z + zOffset,
-            ]}
-            rotation={[0, rotationRad, 0]}
-          >
-            {material}
+          <Box {...boxProps}>
+            {!shaderMaterial && countertopMaterial && (
+              <meshStandardMaterial
+                color={countertopMaterial.color || "#E8E8E8"}
+                roughness={countertopMaterial.roughness ?? 0.6}
+                metalness={countertopMaterial.metalness ?? 0.0}
+              />
+            )}
+            {!shaderMaterial && !countertopMaterial && (
+              <meshStandardMaterial color="#E8E8E8" roughness={0.6} />
+            )}
           </Box>
         );
       })}

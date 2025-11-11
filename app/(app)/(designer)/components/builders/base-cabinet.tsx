@@ -45,9 +45,8 @@ const Shelf = ({ width, depth, position, color }: ShelfProps) => (
 
 // Главный компонент-строитель
 export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
-  // Try to load shader material first (if shaderId is defined)
-  // Fall back to standard material if no shader is available
-  // Memory: Shader materials provide realistic PBR rendering
+  // Load materials at top level (Hook rules)
+  // Memory: Hooks must be called at top level of component
   const shaderMaterial = useShaderMaterialFromDefinition(module.materials?.facade);
   const standardMaterial = useCabinetMaterial(module.materials?.facade);
   

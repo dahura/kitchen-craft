@@ -35,14 +35,16 @@ const Shelf = ({ width, depth, position, color }: ShelfProps) => (
 
 // Main upper cabinet builder component
 export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
-  // Try to load shader material first (if shaderId is defined)
-  // Fall back to standard material if no shader is available
-  // Memory: Shader materials provide realistic PBR rendering
-  const shaderMaterial = useShaderMaterialFromDefinition(module.materials?.facade);
+  // Load materials at top level (Hook rules)
+  // Memory: Hooks must be called at top level of component
+  const shaderMaterial = useShaderMaterialFromDefinition(
+    module.materials?.facade
+  );
   const standardMaterial = useCabinetMaterial(module.materials?.facade);
-  
+
   // Use shader material if available, otherwise fall back to standard material
-  const facadeMaterial = (shaderMaterial as THREE.Material | null) || standardMaterial;
+  const facadeMaterial =
+    (shaderMaterial as THREE.Material | null) || standardMaterial;
 
   // Create materials once for optimization
   const carcassMaterial = useMemo(
@@ -79,7 +81,8 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
 
       // Draw animated doors - upper cabinets can have 1 or 2 doors
       const doorWidth = internalWidth;
-      const doorHeight = module.dimensions.height - carcassThickness * 2 - FACADE_GAP * 2;
+      const doorHeight =
+        module.dimensions.height - carcassThickness * 2 - FACADE_GAP * 2;
       const doorDepth = 1.5;
 
       if (structure.doorCount === 1) {

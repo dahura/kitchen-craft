@@ -35,9 +35,8 @@ const Shelf = ({ width, depth, position, color }: ShelfProps) => (
 
 // Main tall cabinet builder component
 export const TallCabinet = ({ module }: { module: RenderableModule }) => {
-  // Try to load shader material first (if shaderId is defined)
-  // Fall back to standard material if no shader is available
-  // Memory: Shader materials provide realistic PBR rendering for better visualization
+  // Load materials at top level (Hook rules)
+  // Memory: Hooks must be called at top level of component
   const shaderMaterial = useShaderMaterialFromDefinition(
     module.materials?.facade
   );
