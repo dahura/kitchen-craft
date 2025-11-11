@@ -10,6 +10,47 @@ export const materialLibrary: MaterialLibrary = {
       roughness: 0.2,
       metalness: 0.1,
     },
+    // Cabinet Blue - Base variant
+    cabinet_blue: {
+      type: "texture",
+      diffuseMap: "/textures/cabinet/blue.png",
+      roughness: 0.4,
+      metalness: 0.0,
+    },
+    // Cabinet Blue - Lighter variant
+    "cabinet_blue.light": {
+      type: "texture",
+      diffuseMap: "/textures/cabinet/blue.png",
+      colorTint: "#D4E8F7",
+      brightness: 0.7,
+      roughness: 0.4,
+      metalness: 0.0,
+    },
+    // Cabinet Blue - Darker variant
+    "cabinet_blue.dark": {
+      type: "texture",
+      diffuseMap: "/textures/cabinet/blue.png",
+      colorTint: "#1A3A4A",
+      brightness: 0.3,
+      roughness: 0.4,
+      metalness: 0.0,
+    },
+    // Cabinet Blue - Matte variant
+    "cabinet_blue.matte": {
+      type: "texture",
+      diffuseMap: "/textures/cabinet/blue.png",
+      roughness: 0.7,
+      metalness: 0.0,
+      roughnessOverride: 0.8,
+    },
+    // Cabinet Blue - Glossy variant
+    "cabinet_blue.glossy": {
+      type: "texture",
+      diffuseMap: "/textures/cabinet/blue.png",
+      roughness: 0.2,
+      metalness: 0.1,
+      roughnessOverride: 0.2,
+    },
   },
   countertops: {
     concrete_grey: {

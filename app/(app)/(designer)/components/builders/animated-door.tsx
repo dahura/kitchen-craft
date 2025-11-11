@@ -24,6 +24,7 @@ interface AnimatedDoorProps {
   depth: number;
   position: [number, number, number];
   color?: string;
+  material?: THREE.Material; // Material from cabinet facade
   config?: Partial<DoorAnimationConfig>;
   onAnimationStateChange?: (state: DoorAnimationState) => void;
   onClick?: () => void;
@@ -41,6 +42,7 @@ export const AnimatedDoor: React.FC<AnimatedDoorProps> = ({
   depth,
   position,
   color = "#8B7355",
+  material,
   config = {},
   onAnimationStateChange,
   onClick,
@@ -174,12 +176,16 @@ export const AnimatedDoor: React.FC<AnimatedDoorProps> = ({
           onPointerOver={handlePointerOver}
           onPointerOut={handlePointerOut}
           onClick={handleClick}
+          material={material}
         >
-          <meshStandardMaterial
-            color={color}
-            transparent
-            opacity={hovered ? 0.9 : 1.0}
-          />
+          {!material && (
+            // Fallback to color-based material when texture is not available
+            <meshStandardMaterial
+              color={color}
+              transparent
+              opacity={hovered ? 0.9 : 1.0}
+            />
+          )}
         </Box>
 
         {/* Door handle - positioned on the right side of the door */}
@@ -259,6 +265,7 @@ interface DoubleDoorProps {
   depth: number;
   position: [number, number, number];
   color?: string;
+  material?: THREE.Material; // Material from cabinet facade
   config?: Partial<DoorAnimationConfig>;
   gap?: number; // Gap between doors
 }
@@ -269,6 +276,7 @@ export const DoubleDoor: React.FC<DoubleDoorProps> = ({
   depth,
   position,
   color = "#8B7355",
+  material,
   config = {},
   gap = 0,
 }) => {
@@ -391,8 +399,9 @@ export const DoubleDoor: React.FC<DoubleDoorProps> = ({
               e.stopPropagation();
               document.body.style.cursor = "auto";
             }}
+            material={material}
           >
-            <meshStandardMaterial color={color} />
+            {!material && <meshStandardMaterial color={color} />}
           </Box>
           {/* Door handle */}
           <Box
@@ -424,8 +433,9 @@ export const DoubleDoor: React.FC<DoubleDoorProps> = ({
               e.stopPropagation();
               document.body.style.cursor = "auto";
             }}
+            material={material}
           >
-            <meshStandardMaterial color={color} />
+            {!material && <meshStandardMaterial color={color} />}
           </Box>
           {/* Door handle */}
           <Box
