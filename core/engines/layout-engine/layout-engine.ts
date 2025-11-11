@@ -105,6 +105,21 @@ export function generateWithCentering(
       continue;
     }
 
+    // Skip hanging modules that align with tall cabinets (floor-and-ceiling)
+    // Tall cabinets already extend to the top of upper cabinets, so no separate upper cabinet is needed
+    const baseModuleConfig = kitchenConfig.layoutLines
+      .flatMap((line) => line.modules)
+      .find((m) => m.id === hangingModule.positioning.alignWithModule);
+    
+    if (
+      baseModuleConfig &&
+      baseModuleConfig.type === "tall" &&
+      baseModuleConfig.positioning.anchor === "floor-and-ceiling"
+    ) {
+      // Tall cabinet already occupies the full height, skip the hanging module
+      continue;
+    }
+
     const renderableModule = createHangingModule(
       hangingModule,
       baseModule,

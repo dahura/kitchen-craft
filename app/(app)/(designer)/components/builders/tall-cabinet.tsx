@@ -103,7 +103,10 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
       structure.shelves.forEach((shelf) => {
         // Convert positionFromBottom to position relative to module center
         // Module center is at height/2, so shelf Y = positionFromBottom - height/2 + carcassThickness
-        const shelfY = shelf.positionFromBottom - module.dimensions.height / 2 + carcassThickness;
+        const shelfY =
+          shelf.positionFromBottom -
+          module.dimensions.height / 2 +
+          carcassThickness;
         elements.push(
           <Shelf
             key={`shelf-${shelf.positionFromBottom}`}
@@ -161,23 +164,6 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
               duration: 1000, // Slower for tall doors
             }}
           />
-        );
-      }
-
-      // Add center divider for double door cabinets
-      if (structure.doorCount === 2) {
-        elements.push(
-          <Box
-            key="divider"
-            position={[0, module.dimensions.height / 2, 0]}
-            args={[
-              1,
-              module.dimensions.height - carcassThickness * 2,
-              internalDepth,
-            ]}
-          >
-            <meshStandardMaterial color="#CCCCCC" />
-          </Box>
         );
       }
 
