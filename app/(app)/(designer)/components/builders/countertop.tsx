@@ -165,10 +165,10 @@ export const Countertop = ({
 
         // Calculate Z position offset for overhang
         // Overhang should be in front of the cabinet (towards the facade)
-        // The front of cabinets faces forward (negative Z direction in this coordinate system)
-        // So we shift the countertop forward (negative Z) by half the overhang
+        // The front of cabinets faces forward (positive Z direction in this coordinate system)
+        // So we shift the countertop forward (positive Z) by half the overhang
         const rotationRad = (segment.rotation * Math.PI) / 180;
-        const zOffset = -countertopOverhang / 2; // Forward (negative Z - towards camera/facade)
+        const zOffset = countertopOverhang / 2; // Forward (positive Z - towards facade)
         const xOffset = 0; // No X offset for 0° rotation
 
         return (
