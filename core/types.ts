@@ -51,6 +51,16 @@ export interface MaterialDefinition {
   colorTint?: string; // HEX color for tinting (#FFFFFF = lighter tint)
   emissiveIntensity?: number; // For adding glow/matte effect
   roughnessOverride?: number; // Override roughness for variations (e.g., glossy/matte)
+
+  // Shader system integration (KIT-50)
+  shaderId?: string; // Reference to shader configuration (e.g., "wood-cabinet", "quartz-countertop")
+  shaderProperties?: {
+    normalMapIntensity?: number;
+    parallaxHeight?: number;
+    aoIntensity?: number;
+    receiveShadow?: boolean;
+    castShadow?: boolean;
+  };
 }
 
 export interface HandleSource {
