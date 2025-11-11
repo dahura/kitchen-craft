@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { devtools, subscribeWithSelector } from "zustand/middleware";
 import { generate } from "@/core/engines/layout-engine/layout-engine";
 import { validateAndFix } from "@/core/engines/validator-engine/validator-engine";
-import { exampleKitchenConfig } from "@/core/examples/example-kitchen-config";
+import { exampleKitchenConfigLight } from "@/core/examples/example-kitchen-config";
 import { materialLibrary } from "@/core/libraries/material-library/material-library";
 import { moduleLibrary } from "@/core/libraries/module-library/module-library";
 import type {
@@ -30,19 +30,19 @@ interface KitchenStore {
   // Действия с модулями
   addModuleToLine: (
     lineId: string,
-    moduleData: Omit<ModuleConfig, "id">,
+    moduleData: Omit<ModuleConfig, "id">
   ) => void;
   updateModule: (
     lineId: string,
     moduleId: string,
-    updates: Partial<ModuleConfig>,
+    updates: Partial<ModuleConfig>
   ) => void;
   removeModuleFromLine: (lineId: string, moduleId: string) => void;
 
   // Действия с материалами
   changeDefaultMaterial: (
     type: "facade" | "countertop" | "handle",
-    materialKey: string,
+    materialKey: string
   ) => void;
 }
 
@@ -51,7 +51,7 @@ export const useKitchenStore = create<KitchenStore>()(
   devtools(
     subscribeWithSelector((set, get) => ({
       // --- ИНИЦИАЛЬНОЕ СОСТОЯНИЕ ---
-      currentConfig: exampleKitchenConfig,
+      currentConfig: exampleKitchenConfigLight,
       renderableModules: [],
       warnings: [],
       errors: [],
@@ -68,13 +68,13 @@ export const useKitchenStore = create<KitchenStore>()(
         const validation = validateAndFix(
           currentConfig,
           currentConfig.globalConstraints,
-          moduleLibrary,
+          moduleLibrary
         );
 
         // 2. Генерация
         const renderableModules = generate(
           validation.fixedConfig,
-          materialLibrary,
+          materialLibrary
         );
 
         // 3. Обновление состояния
@@ -94,7 +94,7 @@ export const useKitchenStore = create<KitchenStore>()(
             currentConfig: config,
           }),
           false,
-          "loadConfig",
+          "loadConfig"
         );
         get().regenerate();
       },
@@ -103,7 +103,7 @@ export const useKitchenStore = create<KitchenStore>()(
         set(
           (state) => {
             const line = state.currentConfig.layoutLines.find(
-              (l) => l.id === lineId,
+              (l) => l.id === lineId
             );
             if (!line) return state;
 
@@ -116,7 +116,7 @@ export const useKitchenStore = create<KitchenStore>()(
             return { currentConfig: { ...state.currentConfig } };
           },
           false,
-          "addModuleToLine",
+          "addModuleToLine"
         );
         get().regenerate();
       },
@@ -125,12 +125,12 @@ export const useKitchenStore = create<KitchenStore>()(
         set(
           (state) => {
             const line = state.currentConfig.layoutLines.find(
-              (l) => l.id === lineId,
+              (l) => l.id === lineId
             );
             if (!line) return state;
 
             const moduleIndex = line.modules.findIndex(
-              (m) => m.id === moduleId,
+              (m) => m.id === moduleId
             );
             if (moduleIndex === -1) return state;
 
@@ -141,7 +141,7 @@ export const useKitchenStore = create<KitchenStore>()(
             return { currentConfig: { ...state.currentConfig } };
           },
           false,
-          "updateModule",
+          "updateModule"
         );
         get().regenerate();
       },
@@ -150,7 +150,7 @@ export const useKitchenStore = create<KitchenStore>()(
         set(
           (state) => {
             const line = state.currentConfig.layoutLines.find(
-              (l) => l.id === lineId,
+              (l) => l.id === lineId
             );
             if (!line) return state;
 
@@ -158,7 +158,7 @@ export const useKitchenStore = create<KitchenStore>()(
             return { currentConfig: { ...state.currentConfig } };
           },
           false,
-          "removeModuleFromLine",
+          "removeModuleFromLine"
         );
         get().regenerate();
       },
@@ -176,13 +176,13 @@ export const useKitchenStore = create<KitchenStore>()(
             },
           }),
           false,
-          "changeDefaultMaterial",
+          "changeDefaultMaterial"
         );
         get().regenerate();
       },
     })),
-    { name: "kitchen-store" }, // Имя для DevTools
-  ),
+    { name: "kitchen-store" } // Имя для DevTools
+  )
 );
 
 // Инициализация при первом импорте

@@ -3,11 +3,13 @@
 import { Box } from "@react-three/drei";
 import type { RenderableModule } from "../../../../../core/types";
 import { useMemo } from "react";
+import * as THREE from "three";
 import { Carcass } from "./carcass";
 import { AnimatedDoor, DoubleDoor } from "./animated-door";
 import { AnimatedDrawer } from "./animated-drawer";
 import { FACADE_GAP } from "./constants";
 import { useCabinetMaterial } from "./useCabinetMaterial";
+import { useShaderMaterialFromDefinition } from "./useShaderMaterial";
 
 /**
  * Tall Cabinet Builder Component
@@ -33,9 +35,16 @@ const Shelf = ({ width, depth, position, color }: ShelfProps) => (
 
 // Main tall cabinet builder component
 export const TallCabinet = ({ module }: { module: RenderableModule }) => {
-  // Load cabinet facade material
-  // Memory: Using hook to handle async texture loading from material library
-  const facadeMaterial = useCabinetMaterial(module.materials?.facade);
+  // Load materials at top level (Hook rules)
+  // Memory: Hooks must be called at top level of component
+  const shaderMaterial = useShaderMaterialFromDefinition(
+    module.materials?.facade
+  );
+  const standardMaterial = useCabinetMaterial(module.materials?.facade);
+
+  // Use shader material if available, otherwise fall back to standard material
+  const facadeMaterial =
+    (shaderMaterial as THREE.Material | null) || standardMaterial;
 
   // Create materials once for optimization
   const carcassMaterial = useMemo(

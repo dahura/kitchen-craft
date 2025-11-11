@@ -16,6 +16,11 @@ export const materialLibrary: MaterialLibrary = {
       diffuseMap: "/textures/cabinet/blue.png",
       roughness: 0.4,
       metalness: 0.0,
+      shaderId: "wood-cabinet",
+      shaderProperties: {
+        normalMapIntensity: 1.0,
+        receiveShadow: true,
+      },
     },
     // Cabinet Blue - Lighter variant
     "cabinet_blue.light": {
@@ -63,6 +68,11 @@ export const materialLibrary: MaterialLibrary = {
       color: "#E8E8E8",
       roughness: 0.3,
       metalness: 0.1,
+      shaderId: "quartz-countertop",
+      shaderProperties: {
+        normalMapIntensity: 0.8,
+        receiveShadow: true,
+      },
     },
   },
   handles: {
