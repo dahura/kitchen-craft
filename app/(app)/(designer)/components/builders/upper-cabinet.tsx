@@ -3,10 +3,12 @@
 import { Box } from "@react-three/drei";
 import type { RenderableModule } from "../../../../../core/types";
 import { useMemo } from "react";
+import * as THREE from "three";
 import { Carcass } from "./carcass";
 import { AnimatedDoor, DoubleDoor } from "./animated-door";
 import { FACADE_GAP } from "./constants";
 import { useCabinetMaterial } from "./useCabinetMaterial";
+import { useShaderMaterialFromDefinition } from "./useShaderMaterial";
 
 /**
  * Upper Cabinet Builder Component
@@ -33,9 +35,14 @@ const Shelf = ({ width, depth, position, color }: ShelfProps) => (
 
 // Main upper cabinet builder component
 export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
-  // Load cabinet facade material
-  // Memory: Using hook to handle async texture loading from material library
-  const facadeMaterial = useCabinetMaterial(module.materials?.facade);
+  // Try to load shader material first (if shaderId is defined)
+  // Fall back to standard material if no shader is available
+  // Memory: Shader materials provide realistic PBR rendering
+  const shaderMaterial = useShaderMaterialFromDefinition(module.materials?.facade);
+  const standardMaterial = useCabinetMaterial(module.materials?.facade);
+  
+  // Use shader material if available, otherwise fall back to standard material
+  const facadeMaterial = (shaderMaterial as THREE.Material | null) || standardMaterial;
 
   // Create materials once for optimization
   const carcassMaterial = useMemo(

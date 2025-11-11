@@ -2,11 +2,13 @@
 "use client";
 import { Box } from "@react-three/drei";
 import { useMemo } from "react";
+import * as THREE from "three";
 import type {
   RenderableModule,
   KitchenConfig,
   MaterialDefinition,
 } from "../../../../../core/types";
+import { useShaderMaterialFromDefinition } from "./useShaderMaterial";
 
 interface CountertopProps {
   modules: RenderableModule[];
@@ -131,23 +133,14 @@ export const Countertop = ({
       return <meshStandardMaterial color="#E8E8E8" roughness={0.6} />;
     }
 
-    // Handle texture maps if available
-    const hasTextures =
-      countertopMaterial.diffuseMap || countertopMaterial.normalMap;
-
-    if (hasTextures) {
-      // For textures, we'll use a simple material for now
-      // Full texture loading can be added later
-      return (
-        <meshStandardMaterial
-          color={countertopMaterial.color || "#E8E8E8"}
-          roughness={countertopMaterial.roughness ?? 0.6}
-          metalness={countertopMaterial.metalness ?? 0.0}
-        />
-      );
+    // Try to load shader material first
+    const shaderMaterial = useShaderMaterialFromDefinition(countertopMaterial);
+    
+    if (shaderMaterial) {
+      return shaderMaterial as React.ReactNode;
     }
 
-    // Solid color material
+    // Fallback to standard material
     return (
       <meshStandardMaterial
         color={countertopMaterial.color || "#E8E8E8"}
