@@ -7,6 +7,7 @@ import { Carcass } from "./carcass";
 import { AnimatedDoor, DoubleDoor } from "./animated-door";
 import { AnimatedDrawer } from "./animated-drawer";
 import { FACADE_GAP } from "./constants";
+import { useCabinetMaterial } from "./useCabinetMaterial";
 
 /**
  * Tall Cabinet Builder Component
@@ -32,6 +33,10 @@ const Shelf = ({ width, depth, position, color }: ShelfProps) => (
 
 // Main tall cabinet builder component
 export const TallCabinet = ({ module }: { module: RenderableModule }) => {
+  // Load cabinet facade material
+  // Memory: Using hook to handle async texture loading from material library
+  const facadeMaterial = useCabinetMaterial(module.materials?.facade);
+
   // Create materials once for optimization
   const carcassMaterial = useMemo(
     () => <meshStandardMaterial color="#CCCCCC" />,
@@ -81,7 +86,8 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
               currentY + actualDrawerHeight / 2,
               (module.dimensions.depth - structure.internalDepth) / 2,
             ]}
-            color="#8B4513" // Drawer color
+            color="#8B4513" // Fallback color for drawers
+            material={facadeMaterial}
           />
         );
 
@@ -138,6 +144,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
               (module.dimensions.depth - doorDepth) / 2,
             ]}
             color={module.materials.facade?.color || "#8B7355"}
+            material={facadeMaterial}
             config={{
               openAngle: Math.PI / 2.5, // Tall cabinets open moderately
               duration: 1000, // Slower for tall doors
@@ -158,6 +165,7 @@ export const TallCabinet = ({ module }: { module: RenderableModule }) => {
               (module.dimensions.depth - doorDepth) / 2,
             ]}
             color={module.materials.facade?.color || "#8B7355"}
+            material={facadeMaterial}
             gap={0} // No gap - modern kitchen style
             config={{
               openAngle: Math.PI / 2.5, // Tall cabinets open moderately

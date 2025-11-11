@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import { Carcass } from "./carcass";
 import { AnimatedDoor, DoubleDoor } from "./animated-door";
 import { FACADE_GAP } from "./constants";
+import { useCabinetMaterial } from "./useCabinetMaterial";
 
 /**
  * Upper Cabinet Builder Component
@@ -32,6 +33,10 @@ const Shelf = ({ width, depth, position, color }: ShelfProps) => (
 
 // Main upper cabinet builder component
 export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
+  // Load cabinet facade material
+  // Memory: Using hook to handle async texture loading from material library
+  const facadeMaterial = useCabinetMaterial(module.materials?.facade);
+
   // Create materials once for optimization
   const carcassMaterial = useMemo(
     () => <meshStandardMaterial color="#CCCCCC" />,
@@ -84,6 +89,7 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
               (module.dimensions.depth - doorDepth) / 2,
             ]}
             color={module.materials.facade?.color || "#8B7355"}
+            material={facadeMaterial}
             config={{
               openAngle: Math.PI / 3, // Upper cabinets open less to avoid head bumping
               duration: 600, // Slightly faster for upper cabinets
@@ -104,6 +110,7 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
               (module.dimensions.depth - doorDepth) / 2,
             ]}
             color={module.materials.facade?.color || "#8B7355"}
+            material={facadeMaterial}
             gap={0} // No gap - modern kitchen style
             config={{
               openAngle: Math.PI / 3, // Upper cabinets open less

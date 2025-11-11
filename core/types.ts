@@ -20,6 +20,19 @@ export interface Dimensions {
 }
 
 // --- Типы для Material Library ---
+// Memory: Available facade materials - used for strict typing and IDE autocomplete
+export type FacadeMaterialId =
+  | "loft_dark_glossy"
+  | "cabinet_blue"
+  | "cabinet_blue.light"
+  | "cabinet_blue.dark"
+  | "cabinet_blue.matte"
+  | "cabinet_blue.glossy";
+
+export type CountertopMaterialId = "concrete_grey" | "quartz_grey";
+
+export type HandleMaterialId = "minimalist_bar_black";
+
 export interface MaterialDefinition {
   type: string;
   color?: string;
@@ -29,7 +42,15 @@ export interface MaterialDefinition {
   diffuseMap?: string;
   normalMap?: string;
   roughnessMap?: string;
-  // ... другие PBR свойства
+  displacementMap?: string;
+  aoMap?: string;
+  // Memory: Extended PBR properties to support both paint and textured materials
+
+  // Material variations support
+  brightness?: number; // 0-1: 0.5 = default, >0.5 = lighter, <0.5 = darker
+  colorTint?: string; // HEX color for tinting (#FFFFFF = lighter tint)
+  emissiveIntensity?: number; // For adding glow/matte effect
+  roughnessOverride?: number; // Override roughness for variations (e.g., glossy/matte)
 }
 
 export interface HandleSource {
@@ -69,9 +90,11 @@ export interface ModuleConfig {
   variant?: string; // variant становится опциональным, т.к. structure важнее
   width: number | "auto";
   positioning: Positioning;
-  materialOverrides?: Partial<
-    Record<"facade" | "countertop" | "handle", string>
-  >;
+  materialOverrides?: {
+    facade?: FacadeMaterialId;
+    countertop?: CountertopMaterialId;
+    handle?: HandleMaterialId;
+  };
   handle?: {
     placement: HandlePlacement;
   };
@@ -105,9 +128,11 @@ export interface HangingModuleConfig {
     offset: { y: number };
     alignWithModule: string;
   };
-  materialOverrides?: Partial<
-    Record<"facade" | "countertop" | "handle", string>
-  >;
+  materialOverrides?: {
+    facade?: FacadeMaterialId;
+    countertop?: CountertopMaterialId;
+    handle?: HandleMaterialId;
+  };
   structure?: Structure; // Описание внутреннего наполнения
   carcass?: Carcass; // Описание корпуса
 }
@@ -140,9 +165,9 @@ export interface KitchenConfig {
   globalSettings: GlobalSettings;
   globalConstraints: GlobalConstraints;
   defaultMaterials: {
-    facade: string;
-    countertop: string;
-    handle: string;
+    facade: FacadeMaterialId;
+    countertop: CountertopMaterialId;
+    handle: HandleMaterialId;
   };
   layoutLines: LayoutLine[];
   hangingModules: HangingModuleConfig[];

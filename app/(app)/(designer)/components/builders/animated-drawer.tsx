@@ -21,6 +21,7 @@ interface AnimatedDrawerProps {
   depth: number;
   position: [number, number, number];
   color?: string;
+  material?: THREE.Material; // Material from cabinet facade
   config?: Partial<DrawerAnimationConfig>;
   onClick?: () => void;
 }
@@ -37,6 +38,7 @@ export const AnimatedDrawer: React.FC<AnimatedDrawerProps> = ({
   depth,
   position,
   color = "#8B4513",
+  material,
   config = {},
   onClick,
 }) => {
@@ -128,15 +130,23 @@ export const AnimatedDrawer: React.FC<AnimatedDrawerProps> = ({
   };
 
   // Memoize drawer material to prevent unnecessary re-renders
+  // Memory: Use textured material if available, otherwise use color-based material
   const drawerMaterial = useMemo(
-    () => (
-      <meshStandardMaterial
-        color={color}
-        transparent
-        opacity={hovered ? 0.9 : 1.0}
-      />
-    ),
-    [color, hovered]
+    () => {
+      if (material) {
+        return (
+          <primitive object={material} attach="material" />
+        );
+      }
+      return (
+        <meshStandardMaterial
+          color={color}
+          transparent
+          opacity={hovered ? 0.9 : 1.0}
+        />
+      );
+    },
+    [material, color, hovered]
   );
 
   return (

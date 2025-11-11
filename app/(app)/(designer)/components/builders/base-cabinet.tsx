@@ -7,6 +7,7 @@ import { Carcass } from "./carcass";
 import { AnimatedDoor, DoubleDoor } from "./animated-door";
 import { AnimatedDrawer } from "./animated-drawer";
 import { FACADE_GAP } from "./constants";
+import { useCabinetMaterial } from "./useCabinetMaterial";
 
 /**
  * NOTE: This component uses the declarative @react-three/drei approach.
@@ -42,6 +43,10 @@ const Shelf = ({ width, depth, position, color }: ShelfProps) => (
 
 // Главный компонент-строитель
 export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
+  // Load cabinet facade material
+  // Memory: Using hook to handle async texture loading from material library
+  const facadeMaterial = useCabinetMaterial(module.materials?.facade);
+
   // Создаем материалы один раз для оптимизации
   const carcassMaterial = useMemo(
     () => <meshStandardMaterial color="#CCCCCC" />,
@@ -92,7 +97,8 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
               currentY + actualDrawerHeight / 2,
               (module.dimensions.depth - structure.internalDepth) / 2,
             ]}
-            color="#8B4513" // Цвет ящиков
+            color="#8B4513" // Fallback color for drawers
+            material={facadeMaterial}
           />
         );
 
@@ -143,6 +149,7 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
               (module.dimensions.depth - doorDepth) / 2,
             ]}
             color={module.materials.facade?.color || "#8B7355"}
+            material={facadeMaterial}
             gap={0}
           />
         );
@@ -159,6 +166,7 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
               (module.dimensions.depth - doorDepth) / 2,
             ]}
             color={module.materials.facade?.color || "#8B7355"}
+            material={facadeMaterial}
           />
         );
       }

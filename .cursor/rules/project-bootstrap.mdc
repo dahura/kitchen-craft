@@ -1,0 +1,104 @@
+# 🚀 Cursor Project Bootstrap Rules (Starter)
+
+These rules help you bootstrap a **brand-new** repo with both *Cursor ⇄ Linear* and *Kilocode ⇄ Linear* automation. Copy **this single file** into `.cursor/rules/`, open the project in Cursor, and the assistant will execute every step below.
+
+> 🔄 **Kilocode Support:** Whenever rules are generated, you get two variants: Cursor (`.mdc` under `.cursor/rules/`) and Kilocode (`.md` under `kilocode/`). Content stays in sync; only the formats differ.
+
+---
+
+## 1. Automatic Linear project creation
+
+1. On the assistant’s first interaction with the repo, it checks Linear for a project whose name matches the repo directory.
+2. If no project exists, the assistant calls:
+   ```typescript
+   create_project {
+     name: <directory_name>,
+     team: "engineering",
+     summary: "Auto-bootstrapped by Cursor",
+   }
+   ```
+3. The resulting project ID is stored in the memory bank under `linear.projectId` for future requests.
+
+> 🔒 Security: make sure `LINEAR_API_KEY` is configured in Cursor before opening the project.
+
+---
+
+## 2. Standard task workflow
+
+### 2.1 Issue creation
+* Any user message containing *bug*, *feature*, or *task* automatically creates a Linear issue (unless the user opts out) and sets status to *Todo*.
+* The issue title comes from the request text; the description summarizes the conversation.
+* The issue links to the project referenced by `linear.projectId`.
+
+### 2.2 Local development flow
+1. When work starts, the assistant:
+   * moves the issue to *In Progress*;
+   * creates a branch named `<ISSUE_KEY>-<kebab-title>`.
+2. Commit messages must begin with `[<ISSUE_KEY>]`.
+3. Pushing the branch moves the issue to *In Review* and opens a draft PR.
+4. Merging the PR sets the issue to *Done* and removes the branch.
+
+---
+
+## 3. Memory and commentary
+* Follow the guidance in `memory-bank-guidelines.mdc` when you need to persist architectural decisions or context.
+
+---
+
+## 4. Project invariants
+
+* **Package manager:** `bun`. Always convert `npm|yarn|pnpm` commands to `bun`.
+* **Branch naming:** `<ISSUE_KEY>-<slug>`.
+* **CI path:** `bun install && bun run test`.
+
+---
+
+## 5. “Bootstrap the project” command
+
+After copying this file, simply tell the assistant:
+
+```
+bootstrap the project
+```
+
+The assistant will:
+1. Create the Linear project (if missing).
+2. Generate supporting rule files for **Cursor** (in `.mdc` format):
+   * `.cursor/rules/development-workflow.mdc`
+   * `.cursor/rules/auto-linear-issue.mdc`
+   * `.cursor/rules/local-task-workflow.mdc`
+   * `.cursor/rules/linear-status-management.mdc`
+3. Generate equivalent rules for **Kilocode** (in `.md` format under `kilocode/`):
+   * `kilocode/development-workflow.md`
+   * `kilocode/auto-linear-issue.md`
+   * `kilocode/local-task-workflow.md`
+   * `kilocode/linear-status-management.md`
+4. Initialize a baseline `README.md`.
+
+---
+
+### Generated files at a glance
+
+#### Cursor (`.cursor/rules/*.mdc`)
+
+| File | Purpose |
+|------|---------|
+| `.cursor/rules/development-workflow.mdc` | Git-flow, code review, PR templates |
+| `.cursor/rules/auto-linear-issue.mdc` | Auto-create issues from user prompts |
+| `.cursor/rules/linear-status-management.mdc` | Map actions to Linear status updates |
+| `.cursor/rules/local-task-workflow.mdc` | Testing, linting, and incremental commits |
+
+#### Kilocode (`kilocode/*.md`)
+
+| File | Purpose |
+|------|---------|
+| `kilocode/development-workflow.md` | Git-flow, code review, PR templates (Kilocode format) |
+| `kilocode/auto-linear-issue.md` | Auto-create issues from user prompts (Kilocode format) |
+| `kilocode/linear-status-management.md` | Map actions to Linear status updates (Kilocode format) |
+| `kilocode/local-task-workflow.md` | Testing, linting, and incremental commits (Kilocode format) |
+
+> 📝 **Note:** Kilocode uses plain `.md` files stored in `.kilocode/`. The content mirrors the `.mdc` rules so both tools stay aligned.
+
+---
+
+🎉 You can now manage issues conversationally and let the automation handle everything from Linear status updates to branch hygiene.
