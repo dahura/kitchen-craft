@@ -383,3 +383,12 @@ export type {
   RoomMaterials,
   RoomTextureLibrary,
 };
+
+// Экспортируем типы для shader system
+export type {
+  ShaderConfiguration,
+  ShaderUniformDefinition,
+  ShaderProperties,
+  LightingConfiguration,
+  LightSource,
+} from './shaders/types';

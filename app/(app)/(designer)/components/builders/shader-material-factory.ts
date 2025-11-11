@@ -176,14 +176,11 @@ export async function createShaderMaterial(config: ShaderConfiguration): Promise
     fragmentShader: fragmentSource,
     uniforms,
     side: THREE.FrontSide,
-    flatShading: false,
-    wireframe: false,
   });
 
   // Apply shader properties
-  material.shadowMap = config.properties.receiveShadow ? THREE.PCFShadowMap : undefined;
-  material.castShadow = config.properties.castShadow ?? false;
-  material.receiveShadow = config.properties.receiveShadow ?? false;
+  // Note: ShaderMaterial doesn't have shadowMap property like MeshStandardMaterial
+  // Shadow settings are managed at the Three.js scene level instead
 
   return material;
 }
@@ -232,8 +229,6 @@ export function updateShaderUniforms(
       } else if (typeof value === 'number' || typeof value === 'boolean') {
         uniform.value = value;
       }
-
-      uniform.needsUpdate = true;
     }
   });
 }
