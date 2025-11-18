@@ -45,8 +45,8 @@ export const WHITE_PLASTER_WALL_SHADER_CONFIG: ShaderConfiguration = {
   },
 
   files: {
-    vertex: './room-surfaces/vertex.glsl',
-    fragment: './room-surfaces/fragment.glsl',
+    vertex: '/shaders/room-surfaces/vertex.glsl',
+    fragment: '/shaders/room-surfaces/fragment.glsl',
   },
 
   metadata: {

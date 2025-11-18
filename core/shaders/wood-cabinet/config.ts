@@ -53,8 +53,8 @@ export const WOOD_CABINET_SHADER_CONFIG: ShaderConfiguration = {
   },
 
   files: {
-    vertex: './wood-cabinet/vertex.glsl',
-    fragment: './wood-cabinet/fragment.glsl',
+    vertex: '/shaders/wood-cabinet/vertex.glsl',
+    fragment: '/shaders/wood-cabinet/fragment.glsl',
   },
 
   metadata: {

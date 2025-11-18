@@ -391,4 +391,4 @@ export type {
   ShaderProperties,
   LightingConfiguration,
   LightSource,
-} from './shaders/types';
+} from "./shaders/types";

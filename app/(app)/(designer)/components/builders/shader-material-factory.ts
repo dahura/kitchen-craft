@@ -1,16 +1,19 @@
 /**
  * Shader Material Factory
- * 
+ *
  * Creates Three.js ShaderMaterial instances from core shader configurations.
  * Bridges the framework-agnostic core/ layer with Three.js rendering.
- * 
+ *
  * This is the main integration point between core shader configs and Three.js.
  */
 
-import * as THREE from 'three';
-import type { ShaderConfiguration, MaterialDefinition } from '../../../../../core/types';
-import { getShaderConfig } from '../../../../../core/shaders';
-import { validateShaderConfig } from '../../../../../core/shaders/utils/shader-loader';
+import * as THREE from "three";
+import type {
+  ShaderConfiguration,
+  MaterialDefinition,
+} from "../../../../../core/types";
+import { getShaderConfig } from "../../../../../core/shaders";
+import { validateShaderConfig } from "../../../../../core/shaders/utils/shader-loader";
 
 /**
  * Shader source loader for Three.js
@@ -18,19 +21,27 @@ import { validateShaderConfig } from '../../../../../core/shaders/utils/shader-l
  * For now, we return shader sources that are bundled
  */
 async function loadShaderSource(shaderPath: string): Promise<string> {
-  // For now, return placeholder
-  // In a real implementation, this would:
-  // - Fetch .glsl file from public/ directory
-  // - Or import as bundled string via webpack/vite
-  console.warn(`loadShaderSource not yet implemented for: ${shaderPath}`);
-  return '';
+  const url = shaderPath.startsWith("http")
+    ? shaderPath
+    : shaderPath.startsWith("/")
+    ? shaderPath
+    : `/shaders/${shaderPath}`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to load shader source from ${url}`);
+  }
+
+  return response.text();
 }
 
 /**
  * Build Three.js uniforms object from shader config
  * Maps shader config uniform definitions to Three.js uniform format
  */
-export function buildThreeJSUniforms(config: ShaderConfiguration): Record<string, THREE.IUniform> {
+export function buildThreeJSUniforms(
+  config: ShaderConfiguration
+): Record<string, THREE.IUniform> {
   const uniforms: Record<string, THREE.IUniform> = {};
 
   // Texture uniforms
@@ -45,7 +56,7 @@ export function buildThreeJSUniforms(config: ShaderConfiguration): Record<string
 
   // Non-texture uniforms with defaults
   Object.entries(config.uniforms).forEach(([uniformName, uniformDef]) => {
-    if (uniformDef.type === 'sampler2D') {
+    if (uniformDef.type === "sampler2D") {
       // Skip samplers here, handled above
       return;
     }
@@ -53,16 +64,16 @@ export function buildThreeJSUniforms(config: ShaderConfiguration): Record<string
     const defaultValue = uniformDef.defaultValue;
 
     switch (uniformDef.type) {
-      case 'float':
+      case "float":
         uniforms[uniformName] = { value: (defaultValue as number) ?? 0.0 };
         break;
-      case 'int':
+      case "int":
         uniforms[uniformName] = { value: (defaultValue as number) ?? 0 };
         break;
-      case 'bool':
+      case "bool":
         uniforms[uniformName] = { value: (defaultValue as boolean) ?? false };
         break;
-      case 'vec2':
+      case "vec2":
         uniforms[uniformName] = {
           value: new THREE.Vector2(
             (defaultValue as { x: number; y: number })?.x ?? 0,
@@ -70,16 +81,22 @@ export function buildThreeJSUniforms(config: ShaderConfiguration): Record<string
           ),
         };
         break;
-      case 'vec3':
+      case "vec3":
         uniforms[uniformName] = {
           value: new THREE.Vector3(
-            (defaultValue as { x?: number; r?: number })?.x ?? (defaultValue as { x?: number; r?: number })?.r ?? 0,
-            (defaultValue as { y?: number; g?: number })?.y ?? (defaultValue as { y?: number; g?: number })?.g ?? 0,
-            (defaultValue as { z?: number; b?: number })?.z ?? (defaultValue as { z?: number; b?: number })?.b ?? 0
+            (defaultValue as { x?: number; r?: number })?.x ??
+              (defaultValue as { x?: number; r?: number })?.r ??
+              0,
+            (defaultValue as { y?: number; g?: number })?.y ??
+              (defaultValue as { y?: number; g?: number })?.g ??
+              0,
+            (defaultValue as { z?: number; b?: number })?.z ??
+              (defaultValue as { z?: number; b?: number })?.b ??
+              0
           ),
         };
         break;
-      case 'vec4':
+      case "vec4":
         uniforms[uniformName] = {
           value: new THREE.Vector4(
             (defaultValue as any)?.x ?? 0,
@@ -89,12 +106,12 @@ export function buildThreeJSUniforms(config: ShaderConfiguration): Record<string
           ),
         };
         break;
-      case 'mat3':
+      case "mat3":
         uniforms[uniformName] = {
           value: new THREE.Matrix3(),
         };
         break;
-      case 'mat4':
+      case "mat4":
         uniforms[uniformName] = {
           value: new THREE.Matrix4(),
         };
@@ -109,7 +126,9 @@ export function buildThreeJSUniforms(config: ShaderConfiguration): Record<string
  * Load textures for shader
  * Returns map of uniform name to THREE.Texture
  */
-export async function loadShaderTextures(config: ShaderConfiguration): Promise<Map<string, THREE.Texture>> {
+export async function loadShaderTextures(
+  config: ShaderConfiguration
+): Promise<Map<string, THREE.Texture>> {
   const textureLoader = new THREE.TextureLoader();
   const textures = new Map<string, THREE.Texture>();
 
@@ -121,7 +140,7 @@ export async function loadShaderTextures(config: ShaderConfiguration): Promise<M
     for (const [uniformName, mapDef] of Object.entries(config.textureMaps)) {
       try {
         const texture = await textureLoader.loadAsync(mapDef.path);
-        
+
         // Set texture properties
         if (mapDef.mipmap) {
           texture.generateMipmaps = true;
@@ -129,16 +148,16 @@ export async function loadShaderTextures(config: ShaderConfiguration): Promise<M
         } else {
           texture.minFilter = THREE.LinearFilter;
         }
-        
+
         texture.magFilter = THREE.LinearFilter;
-        
+
         textures.set(uniformName, texture);
       } catch (error) {
         console.warn(`Failed to load texture ${mapDef.path}:`, error);
       }
     }
   } catch (error) {
-    console.error('Error loading shader textures:', error);
+    console.error("Error loading shader textures:", error);
   }
 
   return textures;
@@ -148,11 +167,15 @@ export async function loadShaderTextures(config: ShaderConfiguration): Promise<M
  * Create Three.js ShaderMaterial from core shader configuration
  * This is the main factory function
  */
-export async function createShaderMaterial(config: ShaderConfiguration): Promise<THREE.ShaderMaterial> {
+export async function createShaderMaterial(
+  config: ShaderConfiguration
+): Promise<THREE.ShaderMaterial> {
   // Validate configuration
   const validation = validateShaderConfig(config);
   if (!validation.valid) {
-    throw new Error(`Invalid shader config '${config.id}': ${validation.errors.join(', ')}`);
+    throw new Error(
+      `Invalid shader config '${config.id}': ${validation.errors.join(", ")}`
+    );
   }
 
   // Load shader sources
@@ -222,11 +245,15 @@ export function updateShaderUniforms(
     if (uniformName in material.uniforms) {
       const uniform = material.uniforms[uniformName];
 
-      if (value instanceof THREE.Vector2 || value instanceof THREE.Vector3 || value instanceof THREE.Vector4) {
+      if (
+        value instanceof THREE.Vector2 ||
+        value instanceof THREE.Vector3 ||
+        value instanceof THREE.Vector4
+      ) {
         uniform.value = value;
       } else if (value instanceof THREE.Texture) {
         uniform.value = value;
-      } else if (typeof value === 'number' || typeof value === 'boolean') {
+      } else if (typeof value === "number" || typeof value === "boolean") {
         uniform.value = value;
       }
     }
@@ -249,4 +276,3 @@ export function cloneShaderMaterial(
 
   return cloned;
 }
-
