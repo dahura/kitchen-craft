@@ -28,7 +28,7 @@ interface ShelfProps {
 }
 
 const Shelf = ({ width, depth, position, color }: ShelfProps) => (
-  <Box position={position} args={[width, 1.5, depth]}>
+  <Box position={position} args={[width, 1.5, depth]} castShadow receiveShadow>
     <meshStandardMaterial color={color} />
   </Box>
 );
@@ -69,20 +69,24 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
     if (!structure || !carcass) return null;
 
     const carcassThickness = carcass.thickness || 1.8;
+    const backPanelThickness = carcass.backPanelThickness || 0.5;
     const internalWidth = module.dimensions.width - carcassThickness * 2;
-    const internalDepth = module.dimensions.depth - carcassThickness;
+    const internalDepth =
+      module.dimensions.depth - carcassThickness - backPanelThickness;
 
     if (structure.type === "door-and-shelf") {
       const elements = [];
 
       // Draw shelves - upper cabinets typically have multiple shelves
+      // Shelves should be positioned inside the cabinet, accounting for back panel
+      const shelfZOffset = (carcassThickness - backPanelThickness) / 2;
       structure.shelves.forEach((shelf) => {
         elements.push(
           <Shelf
             key={`shelf-${shelf.positionFromBottom}`}
             width={internalWidth}
             depth={internalDepth - 1}
-            position={[0, shelf.positionFromBottom, 0]}
+            position={[0, shelf.positionFromBottom, shelfZOffset]}
             color="#D2691E" // Shelf color
           />
         );
@@ -105,7 +109,7 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
             position={[
               0,
               carcassThickness + doorHeight / 2,
-              (module.dimensions.depth - doorDepth) / 2,
+              (module.dimensions.depth - carcassThickness - doorDepth) / 2,
             ]}
             color={module.materials.facade?.color || "#8B7355"}
             material={facadeMaterial}
@@ -126,7 +130,7 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
             position={[
               0,
               carcassThickness + doorHeight / 2,
-              (module.dimensions.depth - doorDepth) / 2,
+              (module.dimensions.depth - carcassThickness - doorDepth) / 2,
             ]}
             color={module.materials.facade?.color || "#8B7355"}
             material={facadeMaterial}

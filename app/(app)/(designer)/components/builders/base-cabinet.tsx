@@ -51,19 +51,27 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
     module.materials?.facade
   );
   const standardMaterial = useCabinetMaterial(module.materials?.facade);
+  const useShaderFacades = false; // temporary: force MeshStandardMaterial so we can isolate shader issues
 
   // Use shader material if available, otherwise fall back to standard material
   // Memoize to prevent infinite loops from async material updates
   // Important: Must have a fallback color to ensure rendering doesn't block on undefined materials
-  const facadeMaterial = useMemo(
-    () =>
-      (shaderMaterial as THREE.Material | null) ||
+  const facadeMaterial = useMemo(() => {
+    const fallback =
       standardMaterial ||
       new THREE.MeshStandardMaterial({
         color: module.materials?.facade?.color || "#8B7355",
-      }),
-    [shaderMaterial, standardMaterial, module.materials?.facade?.color]
-  );
+      });
+    if (useShaderFacades) {
+      return (shaderMaterial as THREE.Material | null) || fallback;
+    }
+    return fallback;
+  }, [
+    shaderMaterial,
+    standardMaterial,
+    module.materials?.facade?.color,
+    useShaderFacades,
+  ]);
 
   // Создаем материалы один раз для оптимизации
   const carcassMaterial = useMemo(
