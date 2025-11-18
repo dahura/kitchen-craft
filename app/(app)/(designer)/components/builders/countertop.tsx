@@ -147,9 +147,8 @@ export const Countertop = ({
         const zOffset = countertopOverhang / 2; // Forward (positive Z - towards facade)
         const xOffset = 0; // No X offset for 0° rotation
 
-        // Use shader material as prop if available
-        const boxProps: any = {
-          key: `countertop-${segment.start}-${segment.end}-${segment.z}-${segment.rotation}-${index}`,
+        // Build props without key
+        const boxProps: Omit<React.ComponentProps<typeof Box>, "key"> = {
           args: [segment.width, countertopThickness, countertopTotalDepth],
           position: [
             segment.centerX + xOffset,
@@ -159,13 +158,15 @@ export const Countertop = ({
           rotation: [0, rotationRad, 0] as [number, number, number],
         };
 
-        // Attach shader material as prop if available
         if (shaderMaterial) {
           boxProps.material = shaderMaterial;
         }
 
         return (
-          <Box {...boxProps}>
+          <Box
+            key={`countertop-${segment.start}-${segment.end}-${segment.z}-${segment.rotation}-${index}`}
+            {...boxProps}
+          >
             {!shaderMaterial && countertopMaterial && (
               <meshStandardMaterial
                 color={countertopMaterial.color || "#E8E8E8"}
