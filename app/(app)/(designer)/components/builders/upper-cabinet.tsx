@@ -28,7 +28,7 @@ interface ShelfProps {
 }
 
 const Shelf = ({ width, depth, position, color }: ShelfProps) => (
-  <Box position={position} args={[width, 1.5, depth]}>
+  <Box position={position} args={[width, 1.5, depth]} castShadow receiveShadow>
     <meshStandardMaterial color={color} />
   </Box>
 );
@@ -44,9 +44,15 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
 
   // Use shader material if available, otherwise fall back to standard material
   // Memoize to prevent infinite loops from async material updates
+  // Important: Must have a fallback color to ensure rendering doesn't block on undefined materials
   const facadeMaterial = useMemo(
-    () => (shaderMaterial as THREE.Material | null) || standardMaterial,
-    [shaderMaterial, standardMaterial]
+    () =>
+      (shaderMaterial as THREE.Material | null) ||
+      standardMaterial ||
+      new THREE.MeshStandardMaterial({
+        color: module.materials?.facade?.color || "#8B7355",
+      }),
+    [shaderMaterial, standardMaterial, module.materials?.facade?.color]
   );
 
   // Create materials once for optimization

@@ -28,6 +28,8 @@ export const Carcass = ({ dimensions, carcass, material }: CarcassProps) => {
       <Box
         args={[thickness, height, depth]}
         position={[-width / 2 + thickness / 2, height / 2, 0]}
+        castShadow
+        receiveShadow
       >
         {material}
       </Box>
@@ -36,6 +38,8 @@ export const Carcass = ({ dimensions, carcass, material }: CarcassProps) => {
       <Box
         args={[thickness, height, depth]}
         position={[width / 2 - thickness / 2, height / 2, 0]}
+        castShadow
+        receiveShadow
       >
         {material}
       </Box>
@@ -44,6 +48,8 @@ export const Carcass = ({ dimensions, carcass, material }: CarcassProps) => {
       <Box
         args={[width - thickness * 2, thickness, depth]}
         position={[0, height - thickness / 2, 0]}
+        castShadow
+        receiveShadow
       >
         {material}
       </Box>
@@ -52,6 +58,8 @@ export const Carcass = ({ dimensions, carcass, material }: CarcassProps) => {
       <Box
         args={[width - thickness * 2, thickness, depth]}
         position={[0, thickness / 2, 0]}
+        castShadow
+        receiveShadow
       >
         {material}
       </Box>
@@ -60,6 +68,8 @@ export const Carcass = ({ dimensions, carcass, material }: CarcassProps) => {
       <Box
         args={[width, height, backPanelThickness]}
         position={[0, height / 2, -depth / 2 + backPanelThickness / 2]}
+        castShadow
+        receiveShadow
       >
         {material}
       </Box>
