@@ -18,12 +18,18 @@ import { validateShaderConfig } from '../../../../../core/shaders/utils/shader-l
  * For now, we return shader sources that are bundled
  */
 async function loadShaderSource(shaderPath: string): Promise<string> {
-  // For now, return placeholder
-  // In a real implementation, this would:
-  // - Fetch .glsl file from public/ directory
-  // - Or import as bundled string via webpack/vite
-  console.warn(`loadShaderSource not yet implemented for: ${shaderPath}`);
-  return '';
+  const url = shaderPath.startsWith('http')
+    ? shaderPath
+    : shaderPath.startsWith('/')
+      ? shaderPath
+      : `/shaders/${shaderPath}`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to load shader source from ${url}`);
+  }
+
+  return response.text();
 }
 
 /**

@@ -46,8 +46,8 @@ export const QUARTZ_COUNTERTOP_SHADER_CONFIG: ShaderConfiguration = {
   },
 
   files: {
-    vertex: './countertop/vertex.glsl',
-    fragment: './countertop/fragment.glsl',
+    vertex: '/shaders/countertop/vertex.glsl',
+    fragment: '/shaders/countertop/fragment.glsl',
   },
 
   metadata: {
