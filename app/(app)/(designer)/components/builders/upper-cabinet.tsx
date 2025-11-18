@@ -46,11 +46,11 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
   // Memoize to prevent infinite loops from async material updates
   // Important: Must have a fallback color to ensure rendering doesn't block on undefined materials
   const facadeMaterial = useMemo(
-    () => 
-      (shaderMaterial as THREE.Material | null) || 
-      standardMaterial || 
-      new THREE.MeshStandardMaterial({ 
-        color: module.materials?.facade?.color || "#8B7355" 
+    () =>
+      (shaderMaterial as THREE.Material | null) ||
+      standardMaterial ||
+      new THREE.MeshStandardMaterial({
+        color: module.materials?.facade?.color || "#8B7355",
       }),
     [shaderMaterial, standardMaterial, module.materials?.facade?.color]
   );
