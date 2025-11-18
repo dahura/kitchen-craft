@@ -14,7 +14,7 @@ export default function DesignerLayout({
       <main className="flex-1 relative">{children}</main>
 
       {/* Footer area for chat and other panels */}
-      <footer className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+      <footer className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50">
         <ChatPanel />
       </footer>
     </section>
