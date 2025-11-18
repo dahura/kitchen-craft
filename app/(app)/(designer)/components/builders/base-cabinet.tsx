@@ -47,11 +47,17 @@ const Shelf = ({ width, depth, position, color }: ShelfProps) => (
 export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
   // Load materials at top level (Hook rules)
   // Memory: Hooks must be called at top level of component
-  const shaderMaterial = useShaderMaterialFromDefinition(module.materials?.facade);
+  const shaderMaterial = useShaderMaterialFromDefinition(
+    module.materials?.facade
+  );
   const standardMaterial = useCabinetMaterial(module.materials?.facade);
-  
+
   // Use shader material if available, otherwise fall back to standard material
-  const facadeMaterial = (shaderMaterial as THREE.Material | null) || standardMaterial;
+  // Memoize to prevent infinite loops from async material updates
+  const facadeMaterial = useMemo(
+    () => (shaderMaterial as THREE.Material | null) || standardMaterial,
+    [shaderMaterial, standardMaterial]
+  );
 
   // Создаем материалы один раз для оптимизации
   const carcassMaterial = useMemo(
@@ -181,7 +187,7 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
     }
 
     return null;
-  }, [module]);
+  }, [module, facadeMaterial]);
 
   return (
     <group position={[module.position.x, module.position.y, module.position.z]}>

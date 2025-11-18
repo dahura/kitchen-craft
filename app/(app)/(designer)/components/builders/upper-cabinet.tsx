@@ -43,8 +43,11 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
   const standardMaterial = useCabinetMaterial(module.materials?.facade);
 
   // Use shader material if available, otherwise fall back to standard material
-  const facadeMaterial =
-    (shaderMaterial as THREE.Material | null) || standardMaterial;
+  // Memoize to prevent infinite loops from async material updates
+  const facadeMaterial = useMemo(
+    () => (shaderMaterial as THREE.Material | null) || standardMaterial,
+    [shaderMaterial, standardMaterial]
+  );
 
   // Create materials once for optimization
   const carcassMaterial = useMemo(
@@ -151,7 +154,7 @@ export const UpperCabinet = ({ module }: { module: RenderableModule }) => {
     }
 
     return null;
-  }, [module]);
+  }, [module, facadeMaterial]);
 
   return (
     <group position={[module.position.x, module.position.y, module.position.z]}>
