@@ -51,7 +51,7 @@ export const BaseCabinet = ({ module }: { module: RenderableModule }) => {
     module.materials?.facade
   );
   const standardMaterial = useCabinetMaterial(module.materials?.facade);
-  const useShaderFacades = false; // temporary: force MeshStandardMaterial so we can isolate shader issues
+  const useShaderFacades = true; // temporary: force MeshStandardMaterial so we can isolate shader issues
 
   // Use shader material if available, otherwise fall back to standard material
   // Memoize to prevent infinite loops from async material updates

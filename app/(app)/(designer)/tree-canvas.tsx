@@ -11,7 +11,6 @@ import { TallCabinet } from "./components/builders/tall-cabinet";
 import { Plinth } from "./components/builders/plinth";
 import { Countertop } from "./components/builders/countertop";
 import { Room } from "./components/room";
-import { RoomMaterialsPanel } from "./components/room-materials-panel";
 import {
   MainLight,
   AmbientLight,
@@ -290,8 +289,6 @@ export default function ThreeCanvas() {
         />
       </Canvas>
 
-      {/* Панель управления материалами комнаты */}
-      <RoomMaterialsPanel />
     </div>
   );
 }
