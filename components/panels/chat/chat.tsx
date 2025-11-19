@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Activity } from "@/components/activity";
 import { useState } from "react";
 
 interface ChatMessage {
@@ -85,13 +86,13 @@ export const Chat = ({
           </Button>
         </div>
 
-        {/* Messages - only show when not collapsed */}
-        {!isCollapsed && (
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll max-h-64">
+        {/* Messages */}
+        <Activity mode={!isCollapsed ? "visible" : "hidden"}>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll max-h-64 transition-opacity duration-300 ease-in-out">
             {chatMessages.map((message) =>
               message.type === "ai" ? (
                 <div key={message.id} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                     <svg
                       className="w-5 h-5 text-primary"
                       fill="currentColor"
@@ -113,11 +114,11 @@ export const Chat = ({
               )
             )}
           </div>
-        )}
+        </Activity>
 
-        {/* Input Area - only show when not collapsed */}
-        {!isCollapsed && (
-          <div className="p-2 border-t border-border/25">
+        {/* Input Area */}
+        <Activity mode={!isCollapsed ? "visible" : "hidden"}>
+          <div className="p-2 border-t border-border/25 transition-opacity duration-300 ease-in-out">
             <div className="relative flex gap-2">
               <Input
                 className="ux-glass-input bg-transparent opacity-50 text-base placeholder:text-foreground"
@@ -147,7 +148,7 @@ export const Chat = ({
               </Button>
             </div>
           </div>
-        )}
+        </Activity>
       </div>
     </div>
   );

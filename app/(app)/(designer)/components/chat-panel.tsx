@@ -1,6 +1,7 @@
 "use client";
 
 import { Chat } from "@/components/panels/chat/chat";
+import { Activity } from "@/components/activity";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 
@@ -37,22 +38,23 @@ export const ChatPanel = () => {
 
   return (
     <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 overflow-hidden">
-      <div
-        className={cn(
-          "transition-all duration-500 ease-in-out",
-          isCollapsed ? "scale-y-0 opacity-0" : "scale-y-100 opacity-100"
-        )}
-        style={{
-          transformOrigin: 'bottom center'
-        }}
-      >
-        <Chat
-          onInputFocus={handleInputFocus}
-          onInputBlur={handleInputBlur}
-          isCollapsed={isCollapsed}
-          onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-        />
-      </div>
+      <Activity mode={isCollapsed ? "hidden" : "visible"}>
+        <div
+          className={cn(
+            "transition-all duration-500 ease-in-out origin-bottom",
+            isCollapsed
+              ? "scale-y-0 opacity-0 pointer-events-none"
+              : "scale-y-100 opacity-100"
+          )}
+        >
+          <Chat
+            onInputFocus={handleInputFocus}
+            onInputBlur={handleInputBlur}
+            isCollapsed={isCollapsed}
+            onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+          />
+        </div>
+      </Activity>
     </div>
   );
 };
