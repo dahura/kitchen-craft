@@ -2,7 +2,7 @@
 
 import { Chat } from "@/components/panels/chat/chat";
 import { cn } from "@/lib/utils";
-import { useState, useEffect, useRef, Activity } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export const ChatPanel = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -36,17 +36,15 @@ export const ChatPanel = () => {
   }, []);
 
   return (
-    <div
-      className={cn(
-        "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 mb-4",
-        isCollapsed ? "mb-4" : "mb-16"
-      )}
-    >
+    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 overflow-hidden">
       <div
         className={cn(
           "transition-all duration-500 ease-in-out",
-          isCollapsed ? "max-h-12" : "max-h-80"
+          isCollapsed ? "scale-y-0 opacity-0" : "scale-y-100 opacity-100"
         )}
+        style={{
+          transformOrigin: 'bottom center'
+        }}
       >
         <Chat
           onInputFocus={handleInputFocus}
