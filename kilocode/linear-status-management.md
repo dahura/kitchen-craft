@@ -1,8 +1,3 @@
----
-description: Map actions to Linear status updates
-globs: 
----
-
 # Linear Status Management
 
 ## Status Mapping

@@ -1,8 +1,3 @@
----
-description: Git-flow, code review, PR templates
-globs: 
----
-
 # Development Workflow
 
 ## Branching Strategy
