@@ -93,8 +93,6 @@ export async function POST(req: Request) {
       messages,
       tools: agentTools,
       system: SYSTEM_PROMPT,
-      // Configuration for tool execution
-      maxSteps: 10, // Allow up to 10 tool calls per request
       onChunk: ({ chunk }) => {
         // Log tool calls for debugging (can be extended for analytics)
         if (chunk.type === 'tool-call') {
@@ -107,12 +105,6 @@ export async function POST(req: Request) {
       onError: ({ error }) => {
         // Log errors for monitoring
         console.error('Stream error:', error);
-      },
-      // Retry configuration for tool execution failures
-      experimental_telemetry: {
-        isEnabled: true,
-        recordInputs: true,
-        recordOutputs: true,
       },
     });
 
