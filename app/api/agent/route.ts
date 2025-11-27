@@ -96,7 +96,7 @@ export async function POST(req: Request) {
       onChunk: ({ chunk }) => {
         // Log tool calls for debugging (can be extended for analytics)
         if (chunk.type === 'tool-call') {
-          console.debug(`Tool called: ${chunk.toolName}`, chunk.args);
+          console.debug(`Tool called: ${chunk.toolName}`, chunk.input);
         }
         if (chunk.type === 'tool-result') {
           console.debug(`Tool result: ${chunk.toolName}`);
