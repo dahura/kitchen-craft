@@ -57,6 +57,7 @@ describe('POST /api/agent', () => {
 
       const data = await response.json();
       expect(data).toHaveProperty('error');
+      expect(data).toHaveProperty('details');
     });
 
     it('should accept valid request with messages', async () => {

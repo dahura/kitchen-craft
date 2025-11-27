@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       return new Response(
         JSON.stringify({
           error: 'Invalid request format',
-          details: validationResult.error.errors,
+          details: validationResult.error.issues,
         }),
         {
           status: 400,
