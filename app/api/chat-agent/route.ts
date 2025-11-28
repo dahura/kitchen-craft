@@ -112,7 +112,7 @@ export async function POST(req: Request) {
           console.log(`🔧 Chat Agent calling: ${chunk.toolName}`);
         }
         if (chunk.type === "tool-result") {
-          console.log(`✅ Tool result:`, chunk.result);
+          console.log(`✅ Tool result for ${chunk.toolName}`);
         }
       },
       onError: ({ error }) => {
