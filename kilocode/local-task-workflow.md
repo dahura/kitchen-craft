@@ -1,8 +1,3 @@
----
-description: Testing, linting, and incremental commits
-globs: 
----
-
 # Local Task Workflow
 
 ## Pre-requisites

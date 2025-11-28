@@ -1,8 +1,3 @@
----
-description: Auto-create issues from user prompts
-globs: 
----
-
 # Auto Linear Issue Creation
 
 ## Trigger

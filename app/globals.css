@@ -123,3 +123,34 @@
 .dark .chat-scroll::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.35);
 }
+
+/* Smooth Activity animation for chat expand/collapse */
+[data-activity-mode="visible"] {
+  animation: slideInUp 0.5s ease-in-out forwards;
+}
+
+[data-activity-mode="hidden"] {
+  animation: slideOutDown 0.5s ease-in-out forwards;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
