@@ -5,12 +5,16 @@ import { Input } from '@/components/ui/input';
 import { useState, useEffect, useRef } from 'react';
 import { Send, Loader } from 'lucide-react';
 import { useAIChat } from '@/app/(app)/(designer)/hooks/useAIChat';
+import { KitchenCard } from './kitchen-card';
+import { KitchenSelectionBadge } from './kitchen-selection-badge';
+import { kitchenOptions } from '@/core/agent/predefined-kitchens';
 
 interface AIChatProps {
   onInputFocus?: () => void;
   onInputBlur?: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  onConversationUpdate?: (hasMessages: boolean) => void;
 }
 
 /**
@@ -22,6 +26,7 @@ export const AIChat = ({
   onInputBlur,
   isCollapsed = false,
   onToggleCollapse,
+  onConversationUpdate,
 }: AIChatProps) => {
   const [chatInput, setChatInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -35,6 +40,11 @@ export const AIChat = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Notify parent when conversation state changes
+  useEffect(() => {
+    onConversationUpdate?.(messages.length > 0);
+  }, [messages, onConversationUpdate]);
 
   const handleSendMessage = async () => {
     if (!chatInput.trim()) return;
@@ -56,10 +66,15 @@ export const AIChat = ({
     }
   };
 
+  const handleKitchenSelect = async (kitchenId: string) => {
+    // Send selection message to agent
+    await sendMessage(`I want ${kitchenId} or number ${kitchenOptions.findIndex(k => k.id === kitchenId) + 1}`);
+  };
+
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-[500px]">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll max-h-96">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll min-h-0">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-32 text-muted-foreground">
             <p className="text-sm">
@@ -80,8 +95,21 @@ export const AIChat = ({
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11z" />
                     </svg>
                   </div>
-                  <div className="ux-glass p-3 rounded-lg rounded-tl-none max-w-md">
-                    <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="ux-glass p-3 rounded-lg rounded-tl-none mb-3">
+                      <p className="text-sm whitespace-pre-wrap break-words">{message.text}</p>
+                    </div>
+                    {message.showKitchenCards && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 max-h-96 overflow-y-auto">
+                        {kitchenOptions.map((kitchen, index) => (
+                          <KitchenCard
+                            key={kitchen.id}
+                            kitchen={{ ...kitchen, index }}
+                            onSelect={handleKitchenSelect}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : message.type === 'error' ? (
@@ -95,17 +123,25 @@ export const AIChat = ({
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
                     </svg>
                   </div>
-                  <div className="bg-destructive/10 p-3 rounded-lg rounded-tl-none max-w-md">
-                    <p className="text-sm text-destructive">{message.error}</p>
+                  <div className="bg-destructive/10 p-3 rounded-lg rounded-tl-none flex-1 min-w-0">
+                    <p className="text-sm text-destructive break-words">{message.error}</p>
                   </div>
                 </div>
               ) : (
                 <div className="flex justify-end">
-                  <div className="bg-primary text-primary-foreground p-3 rounded-lg rounded-br-none max-w-md">
-                    <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                  <div className="bg-primary text-primary-foreground p-3 rounded-lg rounded-br-none max-w-[80%]">
+                    <p className="text-sm whitespace-pre-wrap break-words">{message.text}</p>
                   </div>
                 </div>
               )}
+              {message.type === 'kitchen-selection' && message.kitchenSelection ? (
+                <div className="flex justify-center">
+                  <KitchenSelectionBadge
+                    kitchenId={message.kitchenSelection.kitchenId}
+                    kitchenName={message.kitchenSelection.kitchenName}
+                  />
+                </div>
+              ) : null}
             </div>
           ))
         )}

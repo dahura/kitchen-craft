@@ -11,6 +11,7 @@ import { moduleLibrary } from "../libraries/module-library/module-library";
 import { roomTextureLibrary } from "../libraries/room-texture-library";
 import { validateAndFix } from "../engines/validator-engine/validator-engine";
 import { generate } from "../engines/layout-engine/layout-engine";
+import { KitchenConfigSchema } from "./schemas";
 
 /**
  * Tool 1: getMaterialLibrary
@@ -156,14 +157,12 @@ export const validateKitchenConfig = tool({
   description:
     "Validate a kitchen configuration using the validation engine. Returns warnings, errors, and fixed configuration if applicable.",
   inputSchema: z.object({
-    config: z
-      .record(z.string(), z.unknown())
-      .describe("The KitchenConfig to validate"),
+    config: KitchenConfigSchema.describe("The KitchenConfig to validate"),
   }),
   execute: async ({ config }) => {
     try {
-      // Type cast to KitchenConfig for validation
-      const kitchenConfig = config as unknown as KitchenConfig;
+      // Config is already validated by Zod schema
+      const kitchenConfig = config as KitchenConfig;
 
       const defaultConstraints: GlobalConstraints = {
         modules: {
@@ -210,14 +209,12 @@ export const generateLayout = tool({
   description:
     "Generate layout (RenderableModule[]) from a validated kitchen configuration. Returns 3D-ready module positions and properties.",
   inputSchema: z.object({
-    config: z
-      .record(z.string(), z.unknown())
-      .describe("The validated KitchenConfig"),
+    config: KitchenConfigSchema.describe("The validated KitchenConfig"),
   }),
   execute: async ({ config }) => {
     try {
-      // Type cast to KitchenConfig
-      const kitchenConfig = config as unknown as KitchenConfig;
+      // Config is already validated by Zod schema
+      const kitchenConfig = config as KitchenConfig;
 
       const defaultConstraints: GlobalConstraints = {
         modules: {
@@ -280,6 +277,70 @@ export const generateLayout = tool({
 });
 
 /**
+ * Tool 6: saveKitchenConfig
+ * Saves the generated kitchen configuration for rendering
+ */
+export const saveKitchenConfig = tool({
+  description:
+    "Save a kitchen configuration and generated layout for rendering in the 3D scene. This is the final step after creating a kitchen design. Returns a configId that can be used to retrieve the configuration.",
+  inputSchema: z.object({
+    config: KitchenConfigSchema.describe("The final KitchenConfig to save"),
+    modules: z
+      .array(z.record(z.string(), z.unknown()))
+      .describe("The RenderableModule[] generated from the config"),
+    description: z
+      .string()
+      .optional()
+      .describe("Optional description of the kitchen design"),
+  }),
+  execute: async ({ config, modules, description }) => {
+    try {
+      // Determine API URL - for server-side execution in Next.js
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL ||
+        process.env.API_URL ||
+        "http://localhost:3000";
+
+      const response = await fetch(`${apiUrl}/api/kitchen-config`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          config,
+          modules,
+          description: description || "AI-generated kitchen design",
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(
+          error.details || error.error || "Failed to save configuration"
+        );
+      }
+
+      const result = await response.json();
+
+      return {
+        success: true,
+        configId: result.configId,
+        description: result.description,
+        timestamp: result.timestamp,
+        message: `Kitchen configuration saved successfully with ID: ${result.configId}. The kitchen design is now ready to view in 3D!`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Failed to save configuration: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+    }
+  },
+});
+
+/**
  * Export all tools as a record for use with AI SDK
  */
 export const agentTools = {
@@ -288,4 +349,5 @@ export const agentTools = {
   getRoomTextures,
   validateKitchenConfig,
   generateLayout,
+  saveKitchenConfig,
 };
