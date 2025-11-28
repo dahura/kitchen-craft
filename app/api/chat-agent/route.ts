@@ -36,7 +36,7 @@ Be conversational and helpful. Don't use tools yourself - only call buildKitchen
  */
 const buildKitchenTool = tool({
   description: "Build a kitchen based on user requirements. Call this when user wants to create/design a kitchen.",
-  parameters: z.object({
+  inputSchema: z.object({
     requirements: z.string().describe("User's kitchen requirements (style, colors, modules, etc.)"),
   }),
   execute: async ({ requirements }) => {
